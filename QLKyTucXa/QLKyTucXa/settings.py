@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-)-86wp&3$+07%*%r&l(x^cs*g*=it5m8zwdif4f6x3*^cho8r3
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['vovanhuy.pythonanywhere.com']
 
 
 # Application definition
@@ -78,15 +78,68 @@ WSGI_APPLICATION = 'QLKyTucXa.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 # 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'kytucxa',
-        'USER': 'root',
-        'PASSWORD': '442161',
-        'HOST': '' # mặc định localhost
+# import os
+
+# if os.getenv('DJANGO_PRODUCTION'):
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.mysql',
+#             'NAME': 'kytucxadb',  # Database trên PythonAnywhere
+#             'USER': 'vovanhuy',  # User trên PythonAnywhere
+#             'PASSWORD': 'your_password',  # Mật khẩu database trên PythonAnywhere
+#             'HOST': 'vovanhuy.mysql.pythonanywhere-services.com',  # Host của PythonAnywhere
+#             'PORT': '3306',
+#         }
+#     }
+# else:
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.mysql',
+#             'NAME': 'kytucxa',  # Database trên local
+#             'USER': 'root',  # User trên local
+#             'PASSWORD': '442161',  # Mật khẩu trên local (nếu có)
+#             'HOST': '',  # Chạy local
+#         }
+#     }
+# Bước 2: Trên PythonAnywhere, mở Bash Console và chạy lệnh:
+# echo "export DJANGO_PRODUCTION=True" >> ~/.bashrc
+# source ~/.bashrc
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'kytucxa',
+#         'USER': 'root',
+#         'PASSWORD': '442161',
+#         'HOST': '' # mặc định localhost
+#     }
+# }
+
+
+# cách 2 
+import socket
+hostname = socket.gethostname()
+if "pythonanywhere" in hostname:  # Nếu chạy trên PythonAnywhere
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'vovanhuy$kytucxadb',
+            'USER': 'vovanhuy',
+            'PASSWORD': '01653897846A',
+            'HOST': 'vovanhuy.mysql.pythonanywhere-services.com',
+            'PORT': '3306',
+        }
     }
-}
+else:  # Nếu chạy local
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'kytucxa',
+            'USER': 'root',
+            'PASSWORD': '442161',
+            'HOST': '',
+        }
+    }
 
 # Configuration
 import cloudinary
