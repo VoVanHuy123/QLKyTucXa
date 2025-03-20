@@ -37,5 +37,6 @@ jobs:
     - name: Run update_code.sh on PythonAnywhere
       run: |
         curl -X POST -H "Authorization: Token ${{ secrets.PYTHONANYWHERE_API_KEY }}" \
-          -d "command=PA_TOKEN=${{ secrets.PYTHONANYWHERE_API_KEY }} bash ~/update_code.sh" \
-          https://www.pythonanywhere.com/user/vovanhuy/tasks_tab/
+            -H "Referer: https://www.pythonanywhere.com/" \
+            -d "command=PA_TOKEN=${{ secrets.PYTHONANYWHERE_API_KEY }} bash ~/update_code.sh" \
+            https://www.pythonanywhere.com/user/vovanhuy/tasks_tab/
