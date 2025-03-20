@@ -13,9 +13,8 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Update code and reload app on PythonAnywhere
+    - name: Run update_code.sh on PythonAnywhere
       run: |
         curl -X POST -H "Authorization: Token ${{ secrets.PYTHONANYWHERE_API_KEY }}" \
-        --data-urlencode "PA_TOKEN=${{ secrets.PYTHONANYWHERE_API_KEY }}" \
-        --form "content=@update_code.sh" \
-        https://www.pythonanywhere.com/api/v0/user/vovanhuy/files/path/home/vovanhuy/update_code.sh?run=true
+        -d "command=export PA_TOKEN=${{ secrets.PYTHONANYWHERE_API_KEY }} && bash ~/update_code.sh" \
+        https://www.pythonanywhere.com/api/v0/user/vovanhuy/consoles/start/
