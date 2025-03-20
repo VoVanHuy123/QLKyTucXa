@@ -1,9 +1,9 @@
-name: Deploy to PythonAnywhere
+name: Deploy Django to PythonAnywhere
 
 on:
   push:
     branches:
-      - main
+      - main  # Kích hoạt khi push code lên nhánh main
 
 jobs:
   deploy:
@@ -17,9 +17,10 @@ jobs:
       run: |
         curl -X POST -H "Authorization: Token ${{ secrets.PYTHONANYWHERE_API_KEY }}" \
         --form "content=@update_code.sh" \
-        https://www.pythonanywhere.com/api/v0/user/vovanhuy/files/path/home/vovanhuy/update_code.sh
+        https://www.pythonanywhere.com/api/v0/user/vovanhuy/files/home/vovanhuy/update_code.sh
 
     - name: Run update_code.sh on PythonAnywhere
       run: |
         curl -X POST -H "Authorization: Token ${{ secrets.PYTHONANYWHERE_API_KEY }}" \
-        https://www.pythonanywhere.com/api/v0/user/vovanhuy/consoles/active/
+        -d "command=bash ~/update_code.sh" \
+        https://www.pythonanywhere.com/api/v0/user/vovanhuy/consoles/
