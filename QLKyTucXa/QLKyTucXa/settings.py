@@ -116,7 +116,7 @@ WSGI_APPLICATION = 'QLKyTucXa.wsgi.application'
 # }
 
 
-# cách 22222
+# cách 222222222
 import socket
 hostname = socket.gethostname()
 if "pythonanywhere" in hostname:  # Nếu chạy trên PythonAnywhere
