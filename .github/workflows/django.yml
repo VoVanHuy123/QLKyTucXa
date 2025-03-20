@@ -13,22 +13,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Set up SSH
+    - name: Deploy to PythonAnywhere via API
       run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.PYTHONANYWHERE_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan -H ssh.pythonanywhere.com >> ~/.ssh/known_hosts
-
-    - name: Deploy to PythonAnywhere
-      run: |
-        ssh vovanhuy@ssh.pythonanywhere.com << EOF
-          cd /home/vovanhuy/QLKyTucXa/QLKyTucXa
-          git pull origin main
-          source rest-venv/bin/activate
-          pip install -r requirements.txt
-          python manage.py migrate
-          python manage.py collectstatic --noinput
-          touch /var/www/vovanhuy_pythonanywhere_com_wsgi.py
-        EOF
-
+        curl -X POST -H "Authorization: Token ${{ secrets.PYTHONANYWHERE_API_KEY }}" \
+        https://www.pythonanywhere.com/api/v0/user/vovanhuy/webapps/vovanhuy.pythonanywhere.com/reload/
