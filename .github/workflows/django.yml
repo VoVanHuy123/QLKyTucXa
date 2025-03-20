@@ -34,14 +34,9 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    # - name: Run update_code.sh on PythonAnywhere
-    #   run: |
-    #     curl -X POST -H "Authorization: Token ${{ secrets.PYTHONANYWHERE_API_KEY }}" \
-    #         -H "Referer: https://www.pythonanywhere.com/" \
-    #         -d "command=PA_TOKEN=${{ secrets.PYTHONANYWHERE_API_KEY }} bash ~/update_code.sh" \
-    #         https://www.pythonanywhere.com/user/vovanhuy/tasks_tab/
-    - name: Run update_code on PythonAnywhere
+    - name: Run update_code.sh on PythonAnywhere
       run: |
         curl -X POST -H "Authorization: Token ${{ secrets.PYTHONANYWHERE_API_KEY }}" \
-            "https://www.pythonanywhere.com/api/v0/user/vovanhuy/consoles/" \
-            -d '{"command": "bash ~/update_code"}'
+            -H "Referer: https://www.pythonanywhere.com/" \
+            -d "command=PA_TOKEN=${{ secrets.PYTHONANYWHERE_API_KEY }} bash ~/update_code.sh" \
+            https://www.pythonanywhere.com/api/v0/user/vovanhuy/schedule/
