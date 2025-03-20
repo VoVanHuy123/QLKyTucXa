@@ -34,15 +34,8 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Start a Bash console on PythonAnywhere
-      run: |
-        curl -X POST -H "Authorization: Token ${{ secrets.PYTHONANYWHERE_API_KEY }}" \
-          -d '{"executable": "/bin/bash"}' \
-          https://www.pythonanywhere.com/api/v0/user/vovanhuy/consoles/ | jq -r '.id' > console_id.txt
-
     - name: Run update_code.sh on PythonAnywhere
       run: |
-        CONSOLE_ID=$(cat console_id.txt)
         curl -X POST -H "Authorization: Token ${{ secrets.PYTHONANYWHERE_API_KEY }}" \
           -d "command=PA_TOKEN=${{ secrets.PYTHONANYWHERE_API_KEY }} bash ~/update_code.sh" \
-          https://www.pythonanywhere.com/api/v0/user/vovanhuy/consoles/$CONSOLE_ID/send_input/
+          https://www.pythonanywhere.com/api/v0/user/vovanhuy/tasks/
