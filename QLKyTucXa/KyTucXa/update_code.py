@@ -1,7 +1,8 @@
 from django.http import JsonResponse
 import subprocess
 import os
-
+from dotenv import load_dotenv
+load_dotenv()
 def update_code_and_deploy(request):
     # Lấy API token từ biến môi trường
     pa_token = os.getenv("PA_TOKEN")
