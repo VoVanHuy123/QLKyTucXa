@@ -62,18 +62,18 @@
 #              -H "Content-Type: application/json" \
 #              -d "{\"command\": \"export PA_TOKEN=$PA_TOKEN && bash ~/update_code.sh\"}" \
 #              https://www.pythonanywhere.com/api/v0/user/vovanhuy/consoles/
-# name: Deploy Django to PythonAnywhere
+name: Deploy Django to PythonAnywhere
 
-# on:
-#   push:
-#     branches:
-#       - main
+on:
+  push:
+    branches:
+      - main
 
-# jobs:
-#   deploy:
-#     runs-on: ubuntu-latest
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
 
-#     steps:
-#     - name: Trigger Django API to update code
-#       run: |
-#         curl -X GET "https://vovanhuy.pythonanywhere.com/update-code/"
+    steps:
+    - name: Trigger Django API to update code
+      run: |
+        curl -X GET "https://vovanhuy.pythonanywhere.com/update-code/"
