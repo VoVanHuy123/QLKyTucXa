@@ -59,6 +59,4 @@ jobs:
         PA_TOKEN: ${{ secrets.PYTHONANYWHERE_API_KEY }}
       run: |
         curl -X POST -H "Authorization: Token $PA_TOKEN" \
-             -H "Content-Type: application/json" \
-             -d '{"command": "PA_TOKEN=$PA_TOKEN bash ~/update_code.sh"}' \
-             https://www.pythonanywhere.com/api/v0/user/vovanhuy/consoles/ 
+             https://www.pythonanywhere.com/api/v0/user/vovanhuy/files/path/home/vovanhuy/update_code.sh/run/
