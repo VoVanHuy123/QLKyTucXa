@@ -6,6 +6,7 @@ from rest_framework.routers import DefaultRouter
 
 routes = DefaultRouter()
 routes.register('rooms', views.RoomViewSet, basename='room')
+routes.register('users', views.UserViewSet, basename='user')
 
 urlpatterns = [
     path('', include(routes.urls)),

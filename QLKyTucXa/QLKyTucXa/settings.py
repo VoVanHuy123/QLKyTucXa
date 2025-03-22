@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'cloudinary',
     'rest_framework',
     'drf_yasg',
+    'oauth2_provider',
 ]
 
 MIDDLEWARE = [
@@ -151,7 +152,14 @@ cloudinary.config(
     api_secret = "kQugdU7BMnVH5E4OYtFLvGKrHfk",
     secure=True
 )
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': ('oauth2_provider.contrib.rest_framework.OAuth2Authentication',)
+}
 
+# OAUTH2_PROVIDER = { 'OAUTH2_BACKEND_CLASS': 'oauth2_provider.oauth2_backends.JSONOAuthLibCore' }
+CLIENT_ID = "2WJMSRpELQFXRBjitCEIdb9kc5HqH7P6B3CwJLRz"
+CLIENT_SECRET ="gZKNQaYPWqK2gAtvKSNVes4nh2kQhnx0jvR0bNY8c5HiYNXYaxThmWhgd4OLxxLrD6uViD25dItr3Yj5ZDIjRzSgACCpNyU6s7J8mLfPTbSQpdZzZ96Mg0uJSgghknpT"
+AUTH_USER_MODEL = 'KyTucXa.User'
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 

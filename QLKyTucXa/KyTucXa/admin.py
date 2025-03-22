@@ -5,7 +5,7 @@ from django.db.models import Count
 from django.template.response import TemplateResponse
 from django.urls import path
 
-from .models import Student, Room
+from .models import  Room
 from django.utils.html import mark_safe
 from django import forms
 

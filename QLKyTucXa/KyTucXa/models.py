@@ -14,19 +14,8 @@ class User(AbstractUser):
         ('Admin', 'Administrator')
     ]
     avatar = CloudinaryField()
-    fullname = models.CharField(max_length=100)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES)
-    active = models.BooleanField(default=True)
-    groups = models.ManyToManyField(
-        "auth.Group",
-        related_name="custom_user_groups",
-        blank=True
-    )
-    user_permissions = models.ManyToManyField(
-        "auth.Permission",
-        related_name="custom_user_permissions",
-        blank=True
-    )
+   
 
 class BaseModel(models.Model):
     active = models.BooleanField(default=True)
