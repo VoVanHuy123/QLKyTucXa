@@ -70,7 +70,7 @@ class Invoice(BaseModel):
         ('Unpaid', 'Unpaid'),
         ('Paid', 'Paid')
     ]
-    student = models.ForeignKey(Student, on_delete=models.CASCADE) # xóa khi Studen bị xóa
+    room = models.ForeignKey(Room, on_delete=models.CASCADE)
     # amount = models.DecimalField(max_digits=10, decimal_places=2)
     total_amount = models.FloatField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES)
