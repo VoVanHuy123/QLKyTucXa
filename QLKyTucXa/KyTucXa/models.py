@@ -95,6 +95,11 @@ class Complaints(BaseModel):
     description = models.TextField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES)
 
+class ComplaintsResponse(BaseModel):
+    complaint = models.ForeignKey('Complaints', on_delete=models.CASCADE)
+    user = models.ForeignKey('User',on_delete=models.CASCADE)
+    content = models.TextField()
+
 class Survey(BaseModel):
     title = models.CharField(max_length=100)
     description = models.CharField(max_length=500)
