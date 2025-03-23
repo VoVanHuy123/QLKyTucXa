@@ -158,7 +158,7 @@ REST_FRAMEWORK = {
 
 # OAUTH2_PROVIDER = { 'OAUTH2_BACKEND_CLASS': 'oauth2_provider.oauth2_backends.JSONOAuthLibCore' }
 CLIENT_ID = "2WJMSRpELQFXRBjitCEIdb9kc5HqH7P6B3CwJLRz"
-CLIENT_SECRET ="gZKNQaYPWqK2gAtvKSNVes4nh2kQhnx0jvR0bNY8c5HiYNXYaxThmWhgd4OLxxLrD6uViD25dItr3Yj5ZDIjRzSgACCpNyU6s7J8mLfPTbSQpdZzZ96Mg0uJSgghknpT"
+CLIENT_SECRET ="OuuCejmto04G6CwOuAG6Zl71gwTZzfXXhZ8TR7LaTvTPsUTPwNIZOIv9DK8re6zkNHZzvcf3wRD8o6gdfCMsXT38EdcDq48lx4H9iwwUfPDIpRNtmNrpRMg6L1Dw3ysq"
 AUTH_USER_MODEL = 'KyTucXa.User'
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators

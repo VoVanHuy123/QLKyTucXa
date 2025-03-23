@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render , get_object_or_404
 from rest_framework import viewsets, generics, status,parsers,permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -8,7 +8,7 @@ from KyTucXa import serializers,paginators,perms
 
 # Create your views here.
 
-class UserViewSet(viewsets.ViewSet, generics.CreateAPIView):
+class UserViewSet(viewsets.ViewSet, generics.CreateAPIView,generics.RetrieveAPIView):
     queryset = User.objects.filter(is_active=True)
     serializer_class = serializers.UserSerializer
     parser_classes = [parsers.MultiPartParser]
@@ -28,6 +28,18 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView):
             return Response(serializers.UserSerializer(u).data)
         else:
             return Response(serializers.UserSerializer(request.user).data)
+    
+    @action(methods=['delete'],detail=True,permission_classes = [permissions.IsAdminUser])
+    def delete_user(self,request,pk):
+        user=get_object_or_404(User,pk=pk)
+        if user.is_superuser:
+            return Response({"error" : "Không thể xóa tài khoản admin"},status=status.HTTP_403_FORBIDDEN)
+        user.delete()
+        return Response({"message":"Xóa người dùng thành công!"},status=status.HTTP_204_NO_CONTENT)
+    
+
+
+    
 
 #bung hết api của Room
 class RoomViewSet(viewsets.ModelViewSet):
