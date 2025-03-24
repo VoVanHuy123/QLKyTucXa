@@ -42,6 +42,11 @@ INSTALLED_APPS = [
     'rest_framework',
     'drf_yasg',
     'oauth2_provider',
+    'rooms',
+    'billing',
+    'notifications',
+    'support',
+    'surveys',
 ]
 
 MIDDLEWARE = [
@@ -158,10 +163,12 @@ REST_FRAMEWORK = {
 
 # OAUTH2_PROVIDER = { 'OAUTH2_BACKEND_CLASS': 'oauth2_provider.oauth2_backends.JSONOAuthLibCore' }
 #Văn Huy oath2
-CLIENT_ID = "k57tNoHhxnrB2sz4QF4Hoq2DdTNZCXEol7wtLHr8"
-CLIENT_SECRET ="rsxiL1UeOHPLgmzLETMtmvJTzCpMqY2qch3kdHTsJxQewvbEUcGAiSbeOIspdL6Z21vtEFFqihleTfeT6sN3rzbADhXoHdmZQspVw09X6uL1Q5SR9LxJnNG0glIscldA"
+import dotenv
+import os
+dotenv.load_dotenv()
+CLIENT_ID = os.getenv('CLIENT_ID')
+CLIENT_SECRET = os.getenv('CLIENT_SECRET')
 
-#Gia Huy oath2
 
 AUTH_USER_MODEL = 'KyTucXa.User'
 # Password validation

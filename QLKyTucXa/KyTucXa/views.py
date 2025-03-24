@@ -41,9 +41,3 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView,generics.RetrieveAPIV
 
     
 
-#bung hết api của Room
-class RoomViewSet(viewsets.ModelViewSet):
-    queryset = Room.objects.filter(status='Empty')
-    serializer_class = serializers.RoomSerializer
-    permission_classes = [perms.IsAdminOrReadOnly]
-    
