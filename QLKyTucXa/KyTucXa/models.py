@@ -29,6 +29,8 @@ class BaseModel(models.Model):
 class Building(models.Model):
     building_name = models.CharField(max_length=50)
     total_floors = models.IntegerField()
+    def __str__(self):
+        return self.building_name
 
 class Room(models.Model):
     STATUS_CHOICES = [
@@ -62,7 +64,6 @@ class RoomChangeRequests(BaseModel):
     current_room = models.ForeignKey('Room', related_name='current_room', on_delete=models.CASCADE)
     requested_room = models.ForeignKey('Room', related_name='requested_room', on_delete=models.CASCADE)
     reason = models.CharField(max_length=500)
-    request_date = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=50, choices=STARTUS_CHOICES, default='Pending')
 
 class Invoice(BaseModel):
@@ -70,15 +71,20 @@ class Invoice(BaseModel):
         ('Unpaid', 'Unpaid'),
         ('Paid', 'Paid')
     ]
+    description = models.CharField(max_length=100,null=True)
     room = models.ForeignKey(Room, on_delete=models.CASCADE)
     # amount = models.DecimalField(max_digits=10, decimal_places=2)
     total_amount = models.FloatField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES)
+    def __str__(self):
+        return self.description
 
 class InvoiceItems(models.Model):
     invoice = models.ForeignKey('Invoice', on_delete=models.CASCADE)
     description = models.CharField(max_length=100)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
+    def __str__(self):
+        return self.description
 
 class Notification(BaseModel):
     title = models.CharField(max_length=255)

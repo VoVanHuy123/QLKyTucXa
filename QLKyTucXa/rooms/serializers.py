@@ -4,5 +4,5 @@ from KyTucXa.models import Room,User
 class RoomSerializer(serializers.ModelSerializer):
     class Meta:
         model = Room
-        fields = ['id','room_number','room_type','total_beds','available_beds']
+        fields = ['id','room_number','room_type','total_beds','available_beds','monthly_fee','status']
 
