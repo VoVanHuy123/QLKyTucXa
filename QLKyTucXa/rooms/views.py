@@ -1,10 +1,13 @@
 from django.shortcuts import render
-from rooms import perms,serializers
-from KyTucXa.models import Room,Invoice
-from rest_framework import viewsets,status,permissions
+from rooms import perms,serializers,paginators
+from KyTucXa.models import Room,Invoice,Building
+from rest_framework import viewsets,status,permissions,generics
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from billing.serializers import InvoiceSerializer
+from rest_framework import filters
+from django_filters.rest_framework import DjangoFilterBackend
+from .filter import RoomFilter
 
 
 # Create your views here.
@@ -13,6 +16,11 @@ class RoomViewSet(viewsets.ModelViewSet):
     queryset = Room.objects.filter(status='Empty')
     serializer_class = serializers.RoomSerializer
     permission_classes = [perms.IsAdminOrReadOnly]
+    pagination_class = paginators.RoomsPaginater
+
+    #lọc
+    filter_backends =  [DjangoFilterBackend]
+    filterset_class = RoomFilter
 
     @action(detail=False, methods=['get'], url_path='invoices',permission_classes = permissions.IsAuthenticated)
     def get_invoices(self, request):
@@ -31,5 +39,9 @@ class RoomViewSet(viewsets.ModelViewSet):
         else: # nếu không có invoice_id thì lấy danh sách invoices
             invoices = Invoice.objects.filter(room_id=pk)
             return Response(InvoiceSerializer(invoices, many=True).data, status=status.HTTP_200_OK)
-    
+
+class BuidingViewSet(viewsets.ViewSet,generics.CreateAPIView,generics.ListAPIView):
+    queryset = Building.objects.filter(active=True)
+    serializer_class = serializers.BuildingSerializer
+    permission_classes = [perms.IsAdminOrReadOnly]
     

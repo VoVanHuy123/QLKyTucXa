@@ -10,4 +10,4 @@ class IsAdminOrReadOnly(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return request.user and request.user.is_authenticated  
         # Các phương thức PUT, PATCH, DELETE chỉ cho admin
-        return request.user and request.user.is_authenticated and request.user.role == "admin"
+        return request.user and request.user.is_authenticated and request.user.is_staff == True

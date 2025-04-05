@@ -3,23 +3,31 @@ from rest_framework import viewsets, generics, status,parsers,permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.contrib.auth import authenticate
-import requests
 from rest_framework.parsers import JSONParser
+
+from oauth2_provider.models import AccessToken, RefreshToken, Application
+from oauthlib.common import generate_token
+from django.utils.timezone import now
+import datetime
 
 from KyTucXa.models import Room,User,RoomChangeRequests
 from KyTucXa import serializers,paginators,perms
 from support.serializers import RoomChangeRequestSerializer
+from KyTucXa.serializers import UserSerializer
 import dotenv
 import os
+
 dotenv.load_dotenv()
 
+#treen pythonanywhere bật cái này lên
+# dotenv.load_dotenv("/home/vovanhuy/QLKyTucXa/QLKyTucXa/.env")
 
 # Create your views here.
 
 class UserViewSet(viewsets.ViewSet, generics.CreateAPIView,generics.RetrieveAPIView):
     queryset = User.objects.filter(is_active=True)
     serializer_class = serializers.UserSerializer
-    parser_classes = [parsers.MultiPartParser]
+    parser_classes = [parsers.JSONParser,parsers.MultiPartParser]
 
     #/user/current-user/
     @action(methods=['get','patch'],url_path="current-user",detail=False, permission_classes = [permissions.IsAuthenticated])
@@ -63,19 +71,54 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView,generics.RetrieveAPIV
             return Response({"error": "Invalid credentials"}, status=400)
         
         CLIENT_ID = os.getenv('CLIENT_ID')
-        CLIENT_SECRET = os.getenv('CLIENT_SECRET')
+        # CLIENT_SECRET = os.getenv('CLIENT_SECRET')
+        
 
-        # Gửi request lấy access token từ OAuth2 Provider
-        data = {
-            "grant_type": "password",
-            "username": username,
-            "password": password,
-            "client_id": CLIENT_ID,
-            "client_secret": CLIENT_SECRET,
-        }
-        response = requests.post("http://127.0.0.1:8000/o/token/", json=data)
+        # # Gửi request lấy access token từ OAuth2 Provider
+        # data = {
+        #     "grant_type": "password",
+        #     "username": username,
+        #     "password": password,
+        #     "client_id": CLIENT_ID,
+        #     "client_secret": CLIENT_SECRET,
+        # }
+        # response = requests.post("http://127.0.0.1:8000/o/token/", json=data)
 
-        return Response(response.json(), status=response.status_code)
+        # return Response(response.json(), status=response.status_code)
+        # Lấy ứng dụng OAuth2
+        try:
+            application = Application.objects.get(client_id=CLIENT_ID)
+        except Application.DoesNotExist:
+            return Response({"error": "OAuth2 Application not found"}, status=500)
+
+        # Xóa token cũ (nếu có)
+        AccessToken.objects.filter(user=user, application=application).delete()
+        RefreshToken.objects.filter(user=user, application=application).delete()
+
+        # Tạo access token mới
+        access_token = AccessToken.objects.create(
+            user=user,
+            application=application,
+            token=generate_token(),
+            expires=now() + datetime.timedelta(seconds=3600),
+            scope="read write"
+        )
+
+        # Tạo refresh token mới
+        refresh_token = RefreshToken.objects.create(
+            user=user,
+            application=application,
+            token=generate_token(),
+            access_token=access_token
+        )
+
+        return Response({
+            "access_token": access_token.token,
+            "token_type": "Bearer",
+            "expires_in": 3600,
+            "refresh_token": refresh_token.token,
+            "user" : UserSerializer(user).data
+        })
     
 
 

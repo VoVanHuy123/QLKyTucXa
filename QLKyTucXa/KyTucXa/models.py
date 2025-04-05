@@ -26,13 +26,13 @@ class BaseModel(models.Model):
         abstract = True
         ordering = ['-id']
 
-class Building(models.Model):
+class Building(BaseModel):
     building_name = models.CharField(max_length=50)
     total_floors = models.IntegerField()
     def __str__(self):
         return self.building_name
 
-class Room(models.Model):
+class Room(BaseModel):
     STATUS_CHOICES = [
         ('Empty','Empty'),
         ('Full', 'Full')
@@ -40,7 +40,7 @@ class Room(models.Model):
     building = models.ForeignKey('Building', on_delete=models.CASCADE)
     room_number = models.CharField(max_length=10, unique=True)
     room_type = models.CharField(max_length=50, null=True)
-    floor = models.IntegerField()
+    floor = models.IntegerField(null=True)
     total_beds = models.IntegerField()
     available_beds = models.IntegerField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES,default='Empty')
