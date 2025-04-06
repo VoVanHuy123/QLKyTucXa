@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'notifications',
     'support',
     'surveys',
+    'account'
 ]
 
 MIDDLEWARE = [
@@ -171,7 +172,7 @@ CLIENT_ID = os.getenv('CLIENT_ID')
 CLIENT_SECRET = os.getenv('CLIENT_SECRET')
 
 
-AUTH_USER_MODEL = 'KyTucXa.User'
+AUTH_USER_MODEL = 'account.User'
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 

@@ -1,6 +1,6 @@
 # filters.py
 import django_filters
-from KyTucXa.models import Room
+from rooms.models import Room
 
 class RoomFilter(django_filters.FilterSet):
     building_id = django_filters.NumberFilter(field_name="building__id")

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from KyTucXa.models import Invoice, InvoiceItems
+from billing.models import Invoice, InvoiceItems
 
 class InvoiceItemSerializer(serializers.ModelSerializer):
     class Meta:

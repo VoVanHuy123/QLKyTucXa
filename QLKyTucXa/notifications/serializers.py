@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from KyTucXa.models import Notification
+from notifications.models import Notification
 
 
 class NotiSerializers(serializers.ModelSerializer):

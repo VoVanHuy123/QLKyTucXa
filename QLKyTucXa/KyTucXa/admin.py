@@ -1,13 +1,6 @@
 from django.contrib import admin
-from django.contrib import admin
-from django.contrib.admin import ModelAdmin
-from django.db.models import Count
-from django.template.response import TemplateResponse
-from django.urls import path
-
-from .models import  Room,Building,Invoice,InvoiceItems
-from django.utils.html import mark_safe
-from django import forms
+from rooms.models import Room, Building
+from billing.models import Invoice,InvoiceItems
 
 
 # Register your models here.
