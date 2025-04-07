@@ -15,7 +15,6 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
@@ -25,8 +24,7 @@ SECRET_KEY = 'django-insecure-)-86wp&3$+07%*%r&l(x^cs*g*=it5m8zwdif4f6x3*^cho8r3
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['vovanhuy.pythonanywhere.com','localhost','127.0.0.1']
-
+ALLOWED_HOSTS = ['vovanhuy.pythonanywhere.com', 'localhost', '127.0.0.1', '10.0.2.2']
 
 # Application definition
 
@@ -47,10 +45,12 @@ INSTALLED_APPS = [
     'notifications',
     'support',
     'surveys',
-    'account'
+    'account',
+    'corsheaders'
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -79,7 +79,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'QLKyTucXa.wsgi.application'
-
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -125,6 +124,7 @@ WSGI_APPLICATION = 'QLKyTucXa.wsgi.application'
 
 # cách ===========================
 import socket
+
 hostname = socket.gethostname()
 if "pythonanywhere" in hostname:  # Nếu chạy trên PythonAnywhere
     DATABASES = {
@@ -141,9 +141,9 @@ else:  # Nếu chạy local
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'kytucxa',
+            'NAME': 'dormitory',
             'USER': 'root',
-            'PASSWORD': '442161',
+            'PASSWORD': '123456',
             'HOST': '',
         }
     }
@@ -152,10 +152,11 @@ else:  # Nếu chạy local
 import cloudinary
 import cloudinary.uploader
 from cloudinary.utils import cloudinary_url
+
 cloudinary.config(
-    cloud_name = "dnzjjdg0v",
-    api_key = "123958894742992",
-    api_secret = "kQugdU7BMnVH5E4OYtFLvGKrHfk",
+    cloud_name="dnzjjdg0v",
+    api_key="123958894742992",
+    api_secret="kQugdU7BMnVH5E4OYtFLvGKrHfk",
     secure=True
 )
 REST_FRAMEWORK = {
@@ -163,14 +164,14 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
 }
 
-OAUTH2_PROVIDER = { 'OAUTH2_BACKEND_CLASS': 'oauth2_provider.oauth2_backends.JSONOAuthLibCore', }
-#Văn Huy oath2
+OAUTH2_PROVIDER = {'OAUTH2_BACKEND_CLASS': 'oauth2_provider.oauth2_backends.JSONOAuthLibCore', }
+# Văn Huy oath2
 import dotenv
 import os
+
 dotenv.load_dotenv()
 CLIENT_ID = os.getenv('CLIENT_ID')
 CLIENT_SECRET = os.getenv('CLIENT_SECRET')
-
 
 AUTH_USER_MODEL = 'account.User'
 # Password validation
@@ -191,7 +192,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
@@ -202,7 +202,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/

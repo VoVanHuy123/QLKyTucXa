@@ -8,6 +8,12 @@ class UserSerializer(serializers.ModelSerializer):
 
         data['avatar'] = instance.avatar.url if instance.avatar else ''
 
+        if hasattr(instance, 'student'):
+            student = instance.student
+            data['phone_number'] = student.phone_number
+            data['student_code'] = student.student_code
+            data['university'] = student.university
+
         return data
 
     # tạo user mới
@@ -15,6 +21,7 @@ class UserSerializer(serializers.ModelSerializer):
         data = validated_data.copy()
         u = User(**data)
         u.role = "Student"
+        u.is_staff = False
         u.set_password(u.password)
         u.save()
 
