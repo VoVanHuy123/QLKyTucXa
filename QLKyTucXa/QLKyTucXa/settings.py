@@ -81,46 +81,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'QLKyTucXa.wsgi.application'
 
 # Database
-# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
-# 
-# import os
-
-# if os.getenv('DJANGO_PRODUCTION'):
-#     DATABASES = {
-#         'default': {
-#             'ENGINE': 'django.db.backends.mysql',
-#             'NAME': 'kytucxadb',  # Database trên PythonAnywhere
-#             'USER': 'vovanhuy',  # User trên PythonAnywhere
-#             'PASSWORD': 'your_password',  # Mật khẩu database trên PythonAnywhere
-#             'HOST': 'vovanhuy.mysql.pythonanywhere-services.com',  # Host của PythonAnywhere
-#             'PORT': '3306',
-#         }
-#     }
-# else:
-#     DATABASES = {
-#         'default': {
-#             'ENGINE': 'django.db.backends.mysql',
-#             'NAME': 'kytucxa',  # Database trên local
-#             'USER': 'root',  # User trên local
-#             'PASSWORD': '442161',  # Mật khẩu trên local (nếu có)
-#             'HOST': '',  # Chạy local
-#         }
-#     }
-# Bước 2: Trên PythonAnywhere, mở Bash Console và chạy lệnh:
-# echo "export DJANGO_PRODUCTION=True" >> ~/.bashrc
-# source ~/.bashrc
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'kytucxa',
-#         'USER': 'root',
-#         'PASSWORD': '442161',
-#         'HOST': '' # mặc định localhost
-#     }
-# }
-
 
 # cách ===========================
 import socket
