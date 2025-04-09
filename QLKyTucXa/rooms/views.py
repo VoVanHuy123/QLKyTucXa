@@ -14,7 +14,7 @@ from .filter import RoomFilter
 # Create your views here.
 # bung hết api của Room
 class RoomViewSet(viewsets.ModelViewSet):
-    queryset = Room.objects.filter(status='Empty')
+    queryset = Room.objects.filter(active = True)
     serializer_class = serializers.RoomSerializer
     permission_classes = [perms.IsAdminOrReadOnly]
     pagination_class = paginators.RoomsPaginater
