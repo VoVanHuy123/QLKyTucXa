@@ -25,6 +25,9 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['first_name', 'last_name', 'username', 'password', 'avatar', 'role', 'is_staff',"is_first_access"]
         extra_kwargs = {
             'password': {
-                'write_only': True
-            }
+                'write_only': True,
+                
+            },
+            # 'is_first_access': {'required': False}
+        
         }
