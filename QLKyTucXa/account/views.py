@@ -42,10 +42,9 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.RetrieveAPI
         if request.method.__eq__("PATCH"):
             u = request.user
             for key in request.data:
-                if key in ['first_name', 'last_name']:
+                if key in ['first_name', 'last_name', 'username', 'is_first_access', 'role']:
                     setattr(u, key, request.data[key])
-
-                elif key.__eq__('password'):
+                elif key == 'password':
                     u.set_password(request.data[key])
             u.save()
             return Response(serializers.UserSerializer(u).data)
