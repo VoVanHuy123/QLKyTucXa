@@ -3,14 +3,16 @@ from django.contrib.auth.models import AbstractUser
 from cloudinary.models import CloudinaryField
 
 
+class UserRole(models.TextChoices):
+    STUDENT = 'Student', 'Student'
+    ADMIN = 'Admin', 'Admin'
+
+
 class User(AbstractUser):
-    ROLE_CHOICES = [
-        ('Student', 'Student'),
-        ('Admin', 'Administrator')
-    ]
     avatar = CloudinaryField(blank=True, null=True)
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES)
+    role = models.CharField(max_length=20, choices=UserRole.choices, default=UserRole.STUDENT)
     is_first_access = models.BooleanField(default=True)
+
     class Meta:
         db_table = "user"
 

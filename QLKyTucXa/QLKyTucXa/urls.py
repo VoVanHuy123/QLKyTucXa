@@ -23,18 +23,18 @@ from drf_yasg import openapi
 
 schema_view = get_schema_view(
     openapi.Info(
-        title="Course API",
+        title="Dormitory API",
         default_version='v1',
-        description="APIs for CourseApp",
-        contact=openapi.Contact(email="thanh.dh@ou.edu.vn"),
-        license=openapi.License(name="Dương Hữu Thành@2021"),
+        description="APIs for Dormitory",
+        contact=openapi.Contact(email="huy@gmail.com"),
+        license=openapi.License(name="Huy@2025"),
     ),
     public=True,
     permission_classes=(permissions.AllowAny,),
 )
 urlpatterns = [
     path('', include('KyTucXa.urls')),
-    path('admin/', admin.site.urls),
+    path('admin/', admin_site.urls),
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     re_path(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     re_path(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),

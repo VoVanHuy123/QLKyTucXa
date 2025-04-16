@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from rooms import perms, serializers, paginators
+from rooms import serializers, paginators
 from rooms.models import Room, Building, RoomChangeRequests
 from billing.models import Invoice
 from rest_framework import viewsets, status, permissions, generics
@@ -7,6 +7,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from billing.serializers import InvoiceSerializer
 from rest_framework import filters
+from KyTucXa import perms
 from django_filters.rest_framework import DjangoFilterBackend
 from .filter import RoomFilter
 

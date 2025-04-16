@@ -1,17 +1,12 @@
-from pickle import FALSE
-
 from django.shortcuts import render, get_object_or_404
 from rest_framework import viewsets, generics, status, parsers, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.contrib.auth import authenticate
-from rest_framework.parsers import JSONParser
-
 from oauth2_provider.models import AccessToken, RefreshToken, Application
 from oauthlib.common import generate_token
 from django.utils.timezone import now
 import datetime
-
 from account.models import User
 from rooms.models import Room, RoomChangeRequests
 from account import serializers, paginators, perms
