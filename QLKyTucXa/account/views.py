@@ -10,7 +10,7 @@ from oauthlib.common import generate_token
 from django.utils.timezone import now
 import datetime
 
-from account.models import User
+from account.models import User,Student
 from rooms.models import Room, RoomChangeRequests
 from account import serializers, paginators, perms
 from rooms.serializers import RoomChangeRequestSerializer
@@ -28,7 +28,7 @@ dotenv.load_dotenv()
 
 
 class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.RetrieveAPIView):
-    queryset = User.objects.filter(is_active=True)
+    queryset = Student.objects.filter(is_active=True)
     serializer_class = serializers.UserSerializer
     parser_classes = [parsers.JSONParser, parsers.MultiPartParser]
 

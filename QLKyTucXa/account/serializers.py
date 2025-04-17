@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User
+from .models import User,Student
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -13,7 +13,7 @@ class UserSerializer(serializers.ModelSerializer):
     # tạo user mới
     def create(self, validated_data):
         data = validated_data.copy()
-        u = User(**data)
+        u = Student(**data)
         u.role = "Student"
         u.set_password(u.password)
         u.save()
@@ -21,8 +21,8 @@ class UserSerializer(serializers.ModelSerializer):
         return u
 
     class Meta:
-        model = User
-        fields = ['first_name', 'last_name', 'username', 'password', 'avatar', 'role', 'is_staff',"is_first_access"]
+        model = Student
+        fields = ['id','first_name', 'last_name', 'username', 'password', 'avatar', 'role', 'is_staff',"is_first_access","phone_number","student_code","university"]
         extra_kwargs = {
             'password': {
                 'write_only': True,
