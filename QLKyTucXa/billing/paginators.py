@@ -1,4 +1,4 @@
 from rest_framework import pagination
 
-class CoursePaginater(pagination.PageNumberPagination):
+class InvoicePaginater(pagination.PageNumberPagination):
     page_size = 6
