@@ -21,4 +21,3 @@ class IsAdminOrUserInvoices(permissions.IsAuthenticated):
 
         return False  # Sinh viên không được POST, PUT, DELETE
     
-    

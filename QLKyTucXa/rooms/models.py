@@ -14,18 +14,18 @@ class Building(BaseModel):
         db_table = "building"
 
 
+class RoomStatus(models.TextChoices):
+    EMPTY = 'Empty', 'Empty'
+    FULL = 'Full', 'Full'
+
 class Room(BaseModel):
-    STATUS_CHOICES = [
-        ('Empty', 'Empty'),
-        ('Full', 'Full')
-    ]
     building = models.ForeignKey('Building', on_delete=models.CASCADE)
     room_number = models.CharField(max_length=10, unique=True)
     room_type = models.CharField(max_length=50, null=True)
     floor = models.IntegerField(null=True)
     total_beds = models.IntegerField()
     available_beds = models.IntegerField()
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Empty')
+    status = models.CharField(max_length=20, choices=RoomStatus.choices, default=RoomStatus.EMPTY)
     monthly_fee = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
@@ -39,18 +39,21 @@ class RoomAssignments(BaseModel):
     student = models.ForeignKey(Student, on_delete=models.PROTECT,related_name="room_assignments")
     room = models.ForeignKey('Room', on_delete=models.PROTECT,related_name="room_assignments")
     bed_number = models.IntegerField(null=True)
-
     class Meta:
         db_table = "room_assignments"
 
 
+class RoomChangeStatus(models.TextChoices):
+    PENDING = 'Pending', 'Pending'
+    APPROVED = 'Approved', 'Approved'
+    REJECTED = 'Rejected', 'Rejected'
+
 class RoomChangeRequests(BaseModel):
-    STATUS_CHOICES = [('Pending', 'Pending'), ('Approved', 'Approved'), ('Rejected', 'Rejected')]
     student = models.ForeignKey(Student, on_delete=models.PROTECT)
     current_room = models.ForeignKey('Room', related_name='current_room', on_delete=models.PROTECT)
     requested_room = models.ForeignKey('Room', related_name='requested_room', on_delete=models.PROTECT)
     reason = models.CharField(max_length=500)
-    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Pending')
+    status = models.CharField(max_length=50, choices=RoomChangeStatus.choices, default=RoomChangeStatus.PENDING)
 
     class Meta:
         db_table = "room_change_requests"
