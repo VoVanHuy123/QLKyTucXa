@@ -18,7 +18,7 @@ class User(AbstractUser):
 
 
 class Student(User):
-    phone_number = models.IntegerField(null=True)
+    phone_number = models.CharField(max_length=20,null=True)
     student_code = models.CharField(max_length=20, null=True)
     university = models.CharField(max_length=20, null=True)
 
