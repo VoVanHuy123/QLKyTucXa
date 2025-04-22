@@ -90,6 +90,34 @@ class RoomViewSet(viewsets.ModelViewSet):
         room.save()
 
         return Response(serializers.RoomAssignmentsSerializer(assignment).data, status=status.HTTP_201_CREATED)
+    @action(methods=['patch'], detail=True, url_path='remove-member', permission_classes=[permissions.IsAdminUser])
+    def remove_member(self, request, pk):
+        try:
+            room = Room.objects.get(pk=pk, active=True)
+        except Room.DoesNotExist:
+            return Response({"error": "Phòng không tồn tại"}, status=status.HTTP_404_NOT_FOUND)
+
+        student_id = request.data.get("student_id")
+
+        if not student_id:
+            return Response({"error": "Thiếu thông tin sinh viên"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            assignment = RoomAssignments.objects.get(room=room, student_id=student_id, active=True)
+        except RoomAssignments.DoesNotExist:
+            return Response({"error": "Sinh viên không ở phòng này hoặc đã bị xóa"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Hủy kích hoạt phân công
+        assignment.active = False
+        assignment.save()
+
+        # Cập nhật lại số giường trống và trạng thái phòng
+        room.available_beds += 1
+        if room.status == 'Full':
+            room.status = 'Empty'
+        room.save()
+
+        return Response({"message": "Xóa thành viên khỏi phòng thành công!"}, status=status.HTTP_200_OK)
 
 
 class BuidingViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIView):
@@ -104,7 +132,7 @@ class RoomChangeRequestViewSet(viewsets.ViewSet, generics.CreateAPIView, generic
     serializer_class = serializers.RoomChangeRequestSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-class RoomAssignmentsViewSet(viewsets.ViewSet,generics.RetrieveAPIView,generics.UpdateAPIView):
+class RoomAssignmentsViewSet(viewsets.ViewSet,generics.RetrieveAPIView):
     queryset = RoomAssignments.objects.filter(active=True)
     serializer_class = serializers.RoomAssignmentsSerializer
     permission_classes = [permissions.IsAdminUser]

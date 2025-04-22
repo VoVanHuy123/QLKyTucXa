@@ -30,6 +30,10 @@ class Room(BaseModel):
 
     def __str__(self):
         return self.room_number
+    
+    @property
+    def room_assignments_active(self):
+        return self.room_assignments.filter(active=True)
 
     class Meta:
         db_table = "room"
