@@ -7,8 +7,8 @@ from oauth2_provider.models import AccessToken, RefreshToken, Application
 from oauthlib.common import generate_token
 from django.utils.timezone import now
 import datetime
-from account.models import User
-from rooms.models import Room, RoomChangeRequests
+from account.models import User,Student
+from rooms.models import Room, RoomChangeRequests,RoomAssignments
 from account import serializers, paginators, perms
 from rooms.serializers import RoomChangeRequestSerializer
 from account.serializers import UserSerializer
@@ -25,7 +25,7 @@ dotenv.load_dotenv()
 
 
 class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.RetrieveAPIView):
-    queryset = User.objects.filter(is_active=True)
+    queryset = Student.objects.filter(is_active=True)
     serializer_class = serializers.UserSerializer
     parser_classes = [parsers.JSONParser, parsers.MultiPartParser]
 
@@ -120,3 +120,14 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.RetrieveAPI
             "refresh_token": refresh_token.token,
             "user": UserSerializer(user).data
         })
+    
+    @action(methods=['get'], detail=False, url_path='available-students',
+        permission_classes=[permissions.IsAuthenticated])
+    def get_available_students(self, request):
+        # Lấy ID sinh viên đang có phòng (RoomAssignments còn active)
+        assigned_student_ids = RoomAssignments.objects.filter(active=True).values_list('student_id', flat=True)
+
+        # Sinh viên đang hoạt động nhưng chưa có phòng hiện tại
+        unassigned_students = Student.objects.filter(is_active=True).exclude(id__in=assigned_student_ids)
+
+        return Response(serializers.UserSerializer(unassigned_students, many=True).data)

@@ -30,16 +30,19 @@ class Room(BaseModel):
 
     def __str__(self):
         return self.room_number
+    
+    @property
+    def room_assignments_active(self):
+        return self.room_assignments.filter(active=True)
 
     class Meta:
         db_table = "room"
 
 
 class RoomAssignments(BaseModel):
-    student = models.ForeignKey(Student, on_delete=models.PROTECT, related_name='rooms')
-    room = models.ForeignKey('Room', on_delete=models.PROTECT, related_name='students')
-    bed_number = models.IntegerField()
-
+    student = models.ForeignKey(Student, on_delete=models.PROTECT,related_name="room_assignments")
+    room = models.ForeignKey('Room', on_delete=models.PROTECT,related_name="room_assignments")
+    bed_number = models.IntegerField(null=True)
     class Meta:
         db_table = "room_assignments"
 

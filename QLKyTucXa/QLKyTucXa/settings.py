@@ -85,28 +85,28 @@ WSGI_APPLICATION = 'QLKyTucXa.wsgi.application'
 # cách ===========================
 import socket
 
-hostname = socket.gethostname()
-if "pythonanywhere" in hostname:  # Nếu chạy trên PythonAnywhere
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'vovanhuy$kytucxadb',
-            'USER': 'vovanhuy',
-            'PASSWORD': '01653897846A',
-            'HOST': 'vovanhuy.mysql.pythonanywhere-services.com',
-            'PORT': '3306',
-        }
+# hostname = socket.gethostname()
+# if "pythonanywhere" in hostname:  # Nếu chạy trên PythonAnywhere
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.mysql',
+#             'NAME': 'vovanhuy$kytucxadb',
+#             'USER': 'vovanhuy',
+#             'PASSWORD': '01653897846A',
+#             'HOST': 'vovanhuy.mysql.pythonanywhere-services.com',
+#             'PORT': '3306',
+#         }
+#     }
+# else:  # Nếu chạy local
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'kytucxa',
+        'USER': 'root',
+        'PASSWORD': '442161',
+        'HOST': '',
     }
-else:  # Nếu chạy local
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'dormitory',
-            'USER': 'root',
-            'PASSWORD': '123456',
-            'HOST': '',
-        }
-    }
+}
 
 # Configuration
 import cloudinary
