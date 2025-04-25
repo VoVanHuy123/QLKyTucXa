@@ -13,7 +13,7 @@ class Survey(BaseModel):
 
 
 class SurveyQuestion(BaseModel):
-    survey = models.ForeignKey('Survey', on_delete=models.CASCADE)
+    survey = models.ForeignKey('Survey', on_delete=models.CASCADE, related_name='questions')
     question_text = models.CharField(max_length=500)
     question_type = models.CharField(max_length=50)
 
@@ -22,10 +22,16 @@ class SurveyQuestion(BaseModel):
 
 
 class SurveyResponse(BaseModel):
-    survey = models.ForeignKey('Survey', on_delete=models.CASCADE)
+    survey = models.ForeignKey('Survey', on_delete=models.CASCADE, related_name='responses')
     question = models.ForeignKey('SurveyQuestion', on_delete=models.CASCADE)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     answer = models.CharField(max_length=500)
 
     class Meta:
         db_table = "survey_response"
+        constraints = [
+            models.UniqueConstraint(
+                fields=['question', 'student'],
+                name='unique_question_student'
+            )
+        ]

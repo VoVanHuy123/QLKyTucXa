@@ -89,7 +89,7 @@ class ComplaintsViewSet(viewsets.ViewSet):
         user = request.user
 
         assignment = RoomAssignments.objects.get(student=user.student, active=True)
-        complaints = self.get_queryset().filter(room=assignment.room, student=user.student)
+        complaints = self.get_queryset().filter(room=assignment.room, student=user.student).order_by('-id')
 
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(complaints, request)
@@ -128,7 +128,7 @@ class ComplaintsViewSet(viewsets.ViewSet):
                 self.check_object_permissions(request, complaint)
             except Complaints.DoesNotExist:
                 return Response({"error": "Không tìm thấy."}, status=status.HTTP_404_NOT_FOUND)
-            responses = complaint.responses.filter(active=True)
+            responses = complaint.responses.filter(active=True).order_by('-id')
 
             paginator = self.pagination_class()
             page = paginator.paginate_queryset(responses, request)

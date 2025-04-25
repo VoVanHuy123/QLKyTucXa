@@ -7,6 +7,7 @@ from rooms.views import RoomViewSet, BuidingViewSet,RoomChangeRequestViewSet,Roo
 from account.views import UserViewSet
 from billing.views import InvoiceViewSet
 from support.views import ComplaintsViewSet, ComplaintsResponseViewSet
+from surveys.views import SurveyViewSet, SurveyQuestionViewSet
 
 routes = DefaultRouter()
 routes.register('users', UserViewSet, basename='user')
@@ -17,6 +18,9 @@ routes.register('invoices', InvoiceViewSet, basename='invoices')
 routes.register('complaints', ComplaintsViewSet, basename='complaints')
 routes.register('complaints-responses', ComplaintsResponseViewSet, basename='complaints-responses')
 routes.register('room-assignments', RoomAssignmentsViewSet, basename='room-assignments')
+routes.register('surveys', SurveyViewSet, basename='surveys')
+routes.register('survey-questions', SurveyQuestionViewSet, basename='survey-questions')
+
 
 urlpatterns = [
     path('', include(routes.urls)),
