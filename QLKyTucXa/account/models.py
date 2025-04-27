@@ -12,7 +12,7 @@ class User(AbstractUser):
     avatar = CloudinaryField(blank=True, null=True)
     role = models.CharField(max_length=20, choices=UserRole.choices, default=UserRole.STUDENT)
     is_first_access = models.BooleanField(default=True)
-
+    expo_token = models.CharField(max_length=255, blank=True, null=True)
     class Meta:
         db_table = "user"
 

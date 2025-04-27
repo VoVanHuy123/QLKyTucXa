@@ -65,12 +65,13 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.RetrieveAPI
     def login(self, request):
         username = request.data.get('username')
         password = request.data.get('password')
+        expo_token = request.data.get('expo_token')
         if not username or not password:
             return Response({"error": "Missing username or password"}, status=400)
 
         user = authenticate(username=username, password=password)
         if user is None:
-            return Response({"error": "Invalid credentials"}, status=400)
+            return Response({"error": "Sai tài khoản hoặc mật khẩu"}, status=400)
 
         CLIENT_ID = os.getenv('CLIENT_ID')
         # CLIENT_SECRET = os.getenv('CLIENT_SECRET')
@@ -112,7 +113,9 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.RetrieveAPI
             token=generate_token(),
             access_token=access_token
         )
-
+        if expo_token and expo_token != user.expo_token:
+            user.expo_token = expo_token
+            user.save()
         return Response({
             "access_token": access_token.token,
             "token_type": "Bearer",
@@ -131,3 +134,12 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.RetrieveAPI
         unassigned_students = Student.objects.filter(is_active=True).exclude(id__in=assigned_student_ids)
 
         return Response(serializers.UserSerializer(unassigned_students, many=True).data)
+    @action(methods=['post'], detail=False, url_path='update-token',
+        permission_classes=[permissions.IsAuthenticated])
+    def update_token(self,request):
+        token = request.data.get("expo_token")
+        if token:
+            request.user.expo_token = token
+            request.user.save()
+            return Response({"message": "Token saved successfully", "expo_token": request.user.expo_token})
+        return Response({"error": "No token provided"}, status=400)
