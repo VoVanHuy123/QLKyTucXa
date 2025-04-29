@@ -7,8 +7,8 @@ from oauth2_provider.models import AccessToken, RefreshToken, Application
 from oauthlib.common import generate_token
 from django.utils.timezone import now
 import datetime
-from account.models import User,Student
-from rooms.models import Room, RoomChangeRequests,RoomAssignments
+from account.models import User, Student
+from rooms.models import Room, RoomChangeRequests, RoomAssignments
 from account import serializers, paginators, perms
 from rooms.serializers import RoomChangeRequestSerializer
 from account.serializers import UserSerializer
@@ -32,15 +32,29 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.RetrieveAPI
     # /user/current-user/
     @action(methods=['get', 'patch'], url_path="current-user", detail=False,
             permission_classes=[permissions.IsAuthenticated])
-    def get_curent_user(self, request):
+    def current_user(self, request):
 
         if request.method.__eq__("PATCH"):
             u = request.user
+
+            student = None
+            if hasattr(u, 'student'):
+                student = u.student
+
             for key in request.data:
-                if key in ['first_name', 'last_name', 'username', 'is_first_access', 'role']:
+                if key in ['first_name', 'last_name', 'username', 'is_first_access', 'role', 'email']:
                     setattr(u, key, request.data[key])
                 elif key == 'password':
                     u.set_password(request.data[key])
+                elif student and key in ['phone_number']:
+                    setattr(student, key, request.data[key])
+
+            avatar = request.FILES.get('avatar')
+            if avatar:
+                u.avatar = avatar
+
+            if student:
+                student.save()
             u.save()
             return Response(serializers.UserSerializer(u).data)
         else:
@@ -65,28 +79,15 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.RetrieveAPI
     def login(self, request):
         username = request.data.get('username')
         password = request.data.get('password')
+        expo_token = request.data.get('expo_token')
         if not username or not password:
             return Response({"error": "Missing username or password"}, status=400)
 
         user = authenticate(username=username, password=password)
         if user is None:
-            return Response({"error": "Invalid credentials"}, status=400)
+            return Response({"error": "Sai tài khoản hoặc mật khẩu"}, status=400)
 
         CLIENT_ID = os.getenv('CLIENT_ID')
-        # CLIENT_SECRET = os.getenv('CLIENT_SECRET')
-
-        # # Gửi request lấy access token từ OAuth2 Provider
-        # data = {
-        #     "grant_type": "password",
-        #     "username": username,
-        #     "password": password,
-        #     "client_id": CLIENT_ID,
-        #     "client_secret": CLIENT_SECRET,
-        # }
-        # response = requests.post("http://127.0.0.1:8000/o/token/", json=data)
-
-        # return Response(response.json(), status=response.status_code)
-        # Lấy ứng dụng OAuth2
         try:
             application = Application.objects.get(client_id=CLIENT_ID)
         except Application.DoesNotExist:
@@ -112,7 +113,9 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.RetrieveAPI
             token=generate_token(),
             access_token=access_token
         )
-
+        if expo_token and expo_token != user.expo_token:
+            user.expo_token = expo_token
+            user.save()
         return Response({
             "access_token": access_token.token,
             "token_type": "Bearer",
@@ -120,9 +123,9 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.RetrieveAPI
             "refresh_token": refresh_token.token,
             "user": UserSerializer(user).data
         })
-    
+
     @action(methods=['get'], detail=False, url_path='available-students',
-        permission_classes=[permissions.IsAuthenticated])
+            permission_classes=[permissions.IsAuthenticated])
     def get_available_students(self, request):
         # Lấy ID sinh viên đang có phòng (RoomAssignments còn active)
         assigned_student_ids = RoomAssignments.objects.filter(active=True).values_list('student_id', flat=True)
@@ -131,3 +134,12 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.RetrieveAPI
         unassigned_students = Student.objects.filter(is_active=True).exclude(id__in=assigned_student_ids)
 
         return Response(serializers.UserSerializer(unassigned_students, many=True).data)
+    @action(methods=['post'], detail=False, url_path='update-token',
+        permission_classes=[permissions.IsAuthenticated])
+    def update_token(self,request):
+        token = request.data.get("expo_token")
+        if token:
+            request.user.expo_token = token
+            request.user.save()
+            return Response({"message": "Token saved successfully", "expo_token": request.user.expo_token})
+        return Response({"error": "No token provided"}, status=400)

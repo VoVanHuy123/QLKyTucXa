@@ -8,6 +8,7 @@ from account.views import UserViewSet
 from billing.views import InvoiceViewSet
 from support.views import ComplaintsViewSet, ComplaintsResponseViewSet
 from surveys.views import SurveyViewSet, SurveyQuestionViewSet
+from notifications.views import NotiViewSet
 
 routes = DefaultRouter()
 routes.register('users', UserViewSet, basename='user')
@@ -20,7 +21,7 @@ routes.register('complaints-responses', ComplaintsResponseViewSet, basename='com
 routes.register('room-assignments', RoomAssignmentsViewSet, basename='room-assignments')
 routes.register('surveys', SurveyViewSet, basename='surveys')
 routes.register('survey-questions', SurveyQuestionViewSet, basename='survey-questions')
-
+routes.register('notifications', NotiViewSet, basename='notifications')
 
 urlpatterns = [
     path('', include(routes.urls)),

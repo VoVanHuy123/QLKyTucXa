@@ -6,6 +6,7 @@ from billing.models import Invoice, InvoiceItems
 from account.models import User, Student
 from support.models import Complaints, ComplaintsResponse
 from surveys.models import Survey, SurveyResponse, SurveyQuestion
+from notifications.models import Notification
 
 
 class MyAdminSite(admin.AdminSite):
@@ -153,3 +154,4 @@ admin_site.register(Survey, MySurveyAdmin)
 admin_site.register(SurveyQuestion, MySurveyQuestionAdmin)
 admin_site.register(SurveyResponse, MySurveyResponseAdmin)
 admin_site.register(RoomAssignments)
+admin_site.register(Notification)
