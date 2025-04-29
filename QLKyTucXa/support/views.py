@@ -1,17 +1,164 @@
-from rest_framework import viewsets, generics, status, mixins
+from rest_framework import viewsets, generics, status, mixins, permissions
+from rest_framework.decorators import action
 from . import models, paginators, serializers
-from .models import Complaints, ComplaintsStatus, ComplaintsResponse
-from KyTucXa.perms import IsAdminOrUserComplaintsOwner, IsAdminUser
+from .models import Complaints, ComplaintsStatus, ComplaintsResponse, ComplaintsStatus
+from KyTucXa.perms import IsAuthenticatedUser, IsStudentUser, IsAdminOrUserRoomOwnerReadOnly, IsAdminUser
+from rest_framework.response import Response
+from rooms.models import RoomAssignments
 
 
-class ComplaintsViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin,
-                     mixins.CreateModelMixin, mixins.DestroyModelMixin):
-    queryset = Complaints.objects.filter(active=True)
+class ComplaintsViewSet(viewsets.ViewSet):
+    queryset = Complaints.objects.filter(active=True).order_by('-id')
     pagination_class = paginators.ComplaintsPaginator
     serializer_class = serializers.ComplaintsSerializer
 
     def get_permissions(self):
-        if self.action in ['retrieve']:
-            return [IsAdminOrUserComplaintsOwner()]
-        else:
+        if self.action in ['create']:
+            return [IsStudentUser()]
+        elif self.action in ['retrieve', 'complaints_responses']:
+            return [IsAdminOrUserRoomOwnerReadOnly()]
+        elif self.action in ['list']:
             return [IsAdminUser()]
+        return [IsAuthenticatedUser()]
+
+    def get_queryset(self):
+        queryset = self.queryset
+
+        q = self.request.query_params.get('q')
+        if q:
+            queryset = queryset.filter(description__icontains=q)
+
+        return queryset
+
+    def create(self, request):
+        user = request.user
+        data = request.data.copy()
+
+        assignment = RoomAssignments.objects.get(student=user.student, active=True)
+        data["room"] = assignment.room.id
+        data["student"] = user.student.id
+        serializer = self.serializer_class(data=data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def retrieve(self, request, pk):
+        try:
+            complaint = self.queryset.get(pk=pk)
+            self.check_object_permissions(request, complaint)
+        except Complaints.DoesNotExist:
+            return Response({"error": "Không tìm thấy."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = self.serializer_class(complaint)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def list(self, request):
+        complaints = self.get_queryset()
+        paginator = self.pagination_class()
+        page = paginator.paginate_queryset(complaints, request)
+
+        if page is not None:
+            serializer = self.serializer_class(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
+
+        serializer = self.serializer_class(complaints, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'], url_path='my-room-complaints')
+    def my_room_complaints(self, request):
+        user = request.user
+
+        assignment = RoomAssignments.objects.get(student=user.student, active=True)
+        complaints = self.get_queryset().filter(room=assignment.room)
+
+        paginator = self.pagination_class()
+        page = paginator.paginate_queryset(complaints, request)
+
+        if page is not None:
+            serializer = self.serializer_class(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
+
+        serializer = self.serializer_class(complaints, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'], url_path='my-complaints')
+    def my_complaints(self, request):
+        user = request.user
+
+        assignment = RoomAssignments.objects.get(student=user.student, active=True)
+        complaints = self.get_queryset().filter(room=assignment.room, student=user.student).order_by('-id')
+
+        paginator = self.pagination_class()
+        page = paginator.paginate_queryset(complaints, request)
+
+        if page is not None:
+            serializer = self.serializer_class(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
+
+        serializer = self.serializer_class(complaints, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['get', 'post'], url_path='complaints-responses')
+    def complaints_responses(self, request, pk):
+        if request.method == 'POST':
+            try:
+                complaint = self.queryset.get(pk=pk)
+                complaint.status = ComplaintsStatus.RESOLVED
+                complaint.save()
+
+                data = request.data.copy()
+                data["user"] = request.user.id
+                data["complaint"] = pk
+                serializer = serializers.ComplaintsResponseSerializer(data=data)
+
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            except Complaints.DoesNotExist:
+                return Response({"error": "Không tìm thấy."}, status=status.HTTP_404_NOT_FOUND)
+
+        else:
+            try:
+                complaint = self.queryset.get(pk=pk)
+                self.check_object_permissions(request, complaint)
+            except Complaints.DoesNotExist:
+                return Response({"error": "Không tìm thấy."}, status=status.HTTP_404_NOT_FOUND)
+            responses = complaint.responses.filter(active=True).order_by('-id')
+
+            paginator = self.pagination_class()
+            page = paginator.paginate_queryset(responses, request)
+
+            if page is not None:
+                serializer = serializers.ComplaintsResponseSerializer(page, many=True)
+                return paginator.get_paginated_response(serializer.data)
+
+            serializer = serializers.ComplaintsResponseSerializer(responses, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ComplaintsResponseViewSet(viewsets.ViewSet):
+    queryset = ComplaintsResponse.objects.filter(active=True)
+    models = ComplaintsResponse
+    pagination_class = paginators.ComplaintsPaginator
+    serializer_class = serializers.ComplaintsResponseSerializer
+
+    def get_permissions(self):
+        if self.action in ['retrieve']:
+            return [IsAdminOrUserRoomOwnerReadOnly()]
+        return [IsAuthenticatedUser()]
+
+    def retrieve(self, request, pk):
+        try:
+            response = self.queryset.get(pk=pk)
+            complaint = response.complaint
+            self.check_object_permissions(request, complaint)
+        except ComplaintsResponse.DoesNotExist:
+            return Response({"error": "Không tìm thấy."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = self.serializer_class(response)
+        return Response(serializer.data, status=status.HTTP_200_OK)

@@ -9,17 +9,17 @@ class ComplaintsStatus(models.TextChoices):
     
     
 class Complaints(BaseModel):
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    room = models.ForeignKey(Room, on_delete=models.CASCADE)
-    description = models.TextField()
-    status = models.CharField(max_length=20, choices=ComplaintsStatus.choices)
+    student = models.ForeignKey(Student, null=False, on_delete=models.CASCADE)
+    room = models.ForeignKey(Room, null=False, on_delete=models.CASCADE)
+    description = models.TextField(null=False)
+    status = models.CharField(max_length=20, choices=ComplaintsStatus.choices, default=ComplaintsStatus.PENDING)
 
     class Meta:
         db_table = "complaints"
 
 
 class ComplaintsResponse(BaseModel):
-    complaint = models.ForeignKey('Complaints', on_delete=models.CASCADE)
+    complaint = models.ForeignKey('Complaints', on_delete=models.CASCADE, related_name="responses")
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     content = models.TextField()
 

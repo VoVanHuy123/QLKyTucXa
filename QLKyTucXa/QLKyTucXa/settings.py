@@ -98,12 +98,18 @@ import socket
 #         }
 #     }
 # else:  # Nếu chạy local
+
+import dotenv
+import os
+
+dotenv.load_dotenv()
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'kytucxa',
-        'USER': 'root',
-        'PASSWORD': '442161',
+        'NAME': os.getenv("DB_NAME"),
+        'USER': os.getenv("DB_USER"),
+        'PASSWORD': os.getenv("DB_PASSWORD"),
         'HOST': '',
     }
 }
@@ -126,10 +132,7 @@ REST_FRAMEWORK = {
 
 OAUTH2_PROVIDER = {'OAUTH2_BACKEND_CLASS': 'oauth2_provider.oauth2_backends.JSONOAuthLibCore', }
 # Văn Huy oath2
-import dotenv
-import os
 
-dotenv.load_dotenv()
 CLIENT_ID = os.getenv('CLIENT_ID')
 CLIENT_SECRET = os.getenv('CLIENT_SECRET')
 
