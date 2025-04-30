@@ -29,6 +29,13 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.RetrieveAPI
     serializer_class = serializers.UserSerializer
     parser_classes = [parsers.JSONParser, parsers.MultiPartParser]
 
+    def str_to_bool(self, val):
+        if isinstance(val, bool):
+            return val
+        if isinstance(val, str):
+            return val.lower() in ['true', '1']
+        return False
+
     # /user/current-user/
     @action(methods=['get', 'patch'], url_path="current-user", detail=False,
             permission_classes=[permissions.IsAuthenticated])
@@ -42,8 +49,10 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.RetrieveAPI
                 student = u.student
 
             for key in request.data:
-                if key in ['first_name', 'last_name', 'username', 'is_first_access', 'role', 'email']:
+                if key in ['first_name', 'last_name', 'username', 'role', 'email']:
                     setattr(u, key, request.data[key])
+                elif key == 'is_first_access':
+                    setattr(u, key, self.str_to_bool(request.data[key]))
                 elif key == 'password':
                     u.set_password(request.data[key])
                 elif student and key in ['phone_number']:
@@ -134,9 +143,10 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.RetrieveAPI
         unassigned_students = Student.objects.filter(is_active=True).exclude(id__in=assigned_student_ids)
 
         return Response(serializers.UserSerializer(unassigned_students, many=True).data)
+
     @action(methods=['post'], detail=False, url_path='update-token',
-        permission_classes=[permissions.IsAuthenticated])
-    def update_token(self,request):
+            permission_classes=[permissions.IsAuthenticated])
+    def update_token(self, request):
         token = request.data.get("expo_token")
         if token:
             request.user.expo_token = token
