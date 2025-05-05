@@ -31,7 +31,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = Student
         fields = ['id', 'first_name', 'last_name', 'email', 'username', 'password', 'avatar', 'role', 'is_staff',
                   "is_first_access", 'phone_number', 'student_code', 'university']
-        read_only = ('student_code', 'university')
+        read_only = ('student_code', 'university', 'is_staff')
         extra_kwargs = {
             'password': {
                 'write_only': True,
