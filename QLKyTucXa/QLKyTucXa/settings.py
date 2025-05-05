@@ -82,27 +82,23 @@ WSGI_APPLICATION = 'QLKyTucXa.wsgi.application'
 
 # Database
 
-# cách ===========================
-import socket
-
-# hostname = socket.gethostname()
-# if "pythonanywhere" in hostname:  # Nếu chạy trên PythonAnywhere
-#     DATABASES = {
-#         'default': {
-#             'ENGINE': 'django.db.backends.mysql',
-#             'NAME': 'vovanhuy$kytucxadb',
-#             'USER': 'vovanhuy',
-#             'PASSWORD': '01653897846A',
-#             'HOST': 'vovanhuy.mysql.pythonanywhere-services.com',
-#             'PORT': '3306',
-#         }
-#     }
-# else:  # Nếu chạy local
 
 import dotenv
 import os
-
 dotenv.load_dotenv()
+# dotenv.load_dotenv("/home/vovanhuy/QLKyTucXa/QLKyTucXa/.env")
+# DATABASES = {
+#      'default': {
+#             'ENGINE': 'django.db.backends.mysql',
+#             'NAME': os.getenv("DB_NAME"),
+#             'USER': os.getenv("DB_USER"),
+#             'PASSWORD': os.getenv("DB_PASSWORD"),
+#             'HOST': os.getenv("DB_HOST"),
+#             'PORT': '3306',
+#      }
+#  }
+
+
 
 DATABASES = {
     'default': {

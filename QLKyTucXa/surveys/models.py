@@ -23,7 +23,7 @@ class SurveyQuestion(BaseModel):
 
 class SurveyResponse(BaseModel):
     survey = models.ForeignKey('Survey', on_delete=models.CASCADE, related_name='responses')
-    question = models.ForeignKey('SurveyQuestion', on_delete=models.CASCADE)
+    question = models.ForeignKey('SurveyQuestion', on_delete=models.CASCADE,related_name='question_responses')
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     answer = models.CharField(max_length=500)
 
