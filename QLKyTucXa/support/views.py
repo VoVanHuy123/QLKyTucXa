@@ -1,16 +1,19 @@
-from rest_framework import viewsets, generics, status, mixins, permissions
+from rest_framework import viewsets, generics, status, mixins, permissions, parsers
 from rest_framework.decorators import action
 from . import models, paginators, serializers
 from .models import Complaints, ComplaintsStatus, ComplaintsResponse, ComplaintsStatus
 from KyTucXa.perms import IsAuthenticatedUser, IsStudentUser, IsAdminOrUserRoomOwnerReadOnly, IsAdminUser
 from rest_framework.response import Response
 from rooms.models import RoomAssignments
+from django.db.models import Q
+
 
 
 class ComplaintsViewSet(viewsets.ViewSet):
     queryset = Complaints.objects.filter(active=True).order_by('-id')
     pagination_class = paginators.ComplaintsPaginator
     serializer_class = serializers.ComplaintsSerializer
+    parser_classes = [parsers.JSONParser, parsers.MultiPartParser]
 
     def get_permissions(self):
         if self.action in ['create']:
@@ -26,7 +29,7 @@ class ComplaintsViewSet(viewsets.ViewSet):
 
         q = self.request.query_params.get('q')
         if q:
-            queryset = queryset.filter(description__icontains=q)
+            queryset = queryset.filter(Q(title__icontains=q) | Q(description__icontains=q))
 
         return queryset
 
@@ -37,6 +40,7 @@ class ComplaintsViewSet(viewsets.ViewSet):
         assignment = RoomAssignments.objects.get(student=user.student, active=True)
         data["room"] = assignment.room.id
         data["student"] = user.student.id
+        data['active'] = True
         serializer = self.serializer_class(data=data)
 
         if serializer.is_valid():
