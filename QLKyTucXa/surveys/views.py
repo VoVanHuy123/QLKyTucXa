@@ -69,11 +69,16 @@ class SurveyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.DestroyAPIV
 
         else:  # GET
             question_id = request.query_params.get('question')
-    
+            student_id = request.query_params.get('student')
+
             responses = survey.responses.filter(active=True)
             
             if question_id:
                 responses = responses.filter(question_id=question_id)
+
+            if student_id:
+                responses = responses.filter(student_id=student_id)
+
             paginator = self.pagination_class()
             page = paginator.paginate_queryset(responses, request)
             serializer = self.serializer_class(page or responses, many=True)
@@ -84,6 +89,10 @@ class SurveyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.DestroyAPIV
         queryset = Survey.objects.filter(active=True).order_by('-id')
         submitted_ids = SurveyResponse.objects.filter(student=request.user.student).values_list('survey_id', flat=True)
         surveys = queryset.filter(id__in=submitted_ids)
+
+        q = self.request.query_params.get('q')
+        if q:
+            surveys = surveys.filter(Q(title__icontains=q) | Q(description__icontains=q))
 
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(surveys, request)
