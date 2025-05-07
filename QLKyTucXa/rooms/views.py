@@ -31,7 +31,7 @@ class RoomViewSet(viewsets.ModelViewSet):
         invoices = Invoice.objects.all()
         return Response(InvoiceSerializer(invoices, many=True).data)
 
-    @action(methods=['get'], detail=True, url_path='invoices', permission_classes=[permissions.IsAuthenticated])
+    @action(methods=['get'], detail=True, url_path='invoices',serializer_class = InvoiceSerializer, permission_classes=[permissions.IsAuthenticated])
     def get_room_invoices(self, request, pk):
         # /romms/{id}/invocies/{id}
         invoice_id = request.query_params.get('invoice_id', None)

@@ -37,7 +37,10 @@ class ComplaintsViewSet(viewsets.ViewSet):
         user = request.user
         data = request.data.copy()
 
-        assignment = RoomAssignments.objects.get(student=user.student, active=True)
+        try:
+            assignment = RoomAssignments.objects.get(student=user.student, active=True)
+        except RoomAssignments.DoesNotExist:
+            return Response({"error": "Sinh viên chưa có phòng."}, status=status.HTTP_400_BAD_REQUEST)
         data["room"] = assignment.room.id
         data["student"] = user.student.id
         data['active'] = True
