@@ -51,6 +51,9 @@ class SurveyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.DestroyAPIV
             responses_data = request.data
             if not responses_data:
                 return Response({"error": "Không có dữ liệu được cung cấp."}, status=status.HTTP_400_BAD_REQUEST)
+            
+            if not hasattr(request.user, 'student') or request.user.student is None:
+                return Response({"error": "Tài khoản không liên kết với sinh viên."}, status=status.HTTP_400_BAD_REQUEST)
 
             created_responses = []
             for response in responses_data:
@@ -69,7 +72,7 @@ class SurveyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.DestroyAPIV
         else:  # GET
             question_id = request.query_params.get('question')
     
-            responses = survey.responses.filter(active=True)
+            responses = survey.responses.filter(active=True).order_by('id')
             
             if question_id:
                 responses = responses.filter(question_id=question_id)

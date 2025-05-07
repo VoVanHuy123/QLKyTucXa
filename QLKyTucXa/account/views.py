@@ -81,8 +81,8 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.RetrieveAPI
     # /user/{id}/requests/
     @action(methods=['get'], detail=True, url_path="requests")
     def get_invoices(self, request, pk):
-        invoices = RoomChangeRequests.objects.filter(user_id=pk)
-        return Response(RoomChangeRequestSerializer(invoices, many=True).data)
+        roomRequests = RoomChangeRequests.objects.filter(user_id=pk)
+        return Response(RoomChangeRequestSerializer(roomRequests, many=True).data)
 
     @action(methods=['post'], detail=False)
     def login(self, request):
