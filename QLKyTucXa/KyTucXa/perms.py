@@ -66,8 +66,6 @@ class IsStudentUser(IsAuthenticatedUser):
         return super().has_permission(request, view) and hasattr(request.user, 'student')
 
 
-class IsStudentOrAdminReadOnly(IsAuthenticatedUser):
+class IsStudentOrAdmin(permissions.BasePermission):
     def has_permission(self, request, view):
-        if request.method in permissions.SAFE_METHODS:
-            return super().has_permission(request, view)
-        return IsStudentUser().has_permission(request, view)
+        return IsStudentUser().has_permission(request, view) or IsAdminUser().has_permission(request, view)

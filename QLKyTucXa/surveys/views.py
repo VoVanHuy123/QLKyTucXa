@@ -4,11 +4,11 @@ from rest_framework.decorators import action
 
 from .models import Survey, SurveyResponse, SurveyQuestion
 from . import models, paginators, serializers
-from KyTucXa.perms import IsAdminUser, IsAuthenticatedUser, IsAdminOrReadOnly, IsObjectOwner, IsStudentOrAdminReadOnly
+from KyTucXa.perms import IsAdminUser, IsAuthenticatedUser, IsAdminOrReadOnly, IsObjectOwner, IsStudentOrAdmin
 from rest_framework.response import Response
 
 
-class SurveyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.DestroyAPIView,generics.CreateAPIView):
+class SurveyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.DestroyAPIView, generics.CreateAPIView):
     queryset = Survey.objects.filter(active=True).order_by('-id')
     pagination_class = paginators.SurveyPaginator
     serializer_class = serializers.SurveySerializer
@@ -33,15 +33,15 @@ class SurveyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.DestroyAPIV
             return Response({"error": "Không tìm thấy."}, status=status.HTTP_404_NOT_FOUND)
         self.check_object_permissions(request, survey)
 
-        serializer = self.serializer_class(survey, data=request.data, partial=True,context={'request': request})
+        serializer = self.serializer_class(survey, data=request.data, partial=True, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    
-    @action(detail=True, methods=['get', 'post'], url_path='survey-responses',serializer_class=serializers.SurveyResponseSerializer, permission_classes=[IsStudentOrAdminReadOnly])
+
+    @action(detail=True, methods=['get', 'post'], url_path='survey-responses',
+            serializer_class=serializers.SurveyResponseSerializer, permission_classes=[IsStudentOrAdmin])
     def create_responses(self, request, pk):
         try:
             survey = self.queryset.get(pk=pk)
@@ -73,9 +73,9 @@ class SurveyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.DestroyAPIV
         else:  # GET
             question_id = request.query_params.get('question')
             student_id = request.query_params.get('student')
-    
+
             responses = survey.responses.filter(active=True).order_by('id')
-            
+
             if question_id:
                 responses = responses.filter(question_id=question_id)
 
@@ -85,11 +85,12 @@ class SurveyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.DestroyAPIV
             paginator = self.pagination_class()
             page = paginator.paginate_queryset(responses, request)
             serializer = self.serializer_class(page or responses, many=True)
-            return paginator.get_paginated_response(serializer.data) if page else Response(serializer.data, status=status.HTTP_200_OK)
+            return paginator.get_paginated_response(serializer.data) if page else Response(serializer.data,
+                                                                                           status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['get'], url_path='survey-history', permission_classes=[IsAuthenticatedUser])
     def get_surveys_history(self, request):
-        queryset = Survey.objects.filter(active=True).order_by('-id')
+        queryset = self.queryset
         submitted_ids = SurveyResponse.objects.filter(student=request.user.student).values_list('survey_id', flat=True)
         surveys = queryset.filter(id__in=submitted_ids)
 
