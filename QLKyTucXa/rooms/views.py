@@ -26,7 +26,7 @@ class RoomViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_class = RoomFilter
 
-    @action(detail=False, methods=['get'], url_path='invoices', permission_classes=[permissions.IsAuthenticated])
+    @action(detail=False, methods=['get'], url_path='invoices', permission_classes=[perms.IsAdminUser])
     def get_invoices(self, request):
         invoices = Invoice.objects.all()
         return Response(InvoiceSerializer(invoices, many=True).data)
@@ -34,7 +34,6 @@ class RoomViewSet(viewsets.ModelViewSet):
     @action(methods=['get'], detail=True, url_path='invoices', serializer_class=InvoiceSerializer,
             permission_classes=[permissions.IsAuthenticated])
     def get_room_invoices(self, request, pk):
-        # /romms/{id}/invocies/{id}
         invoice_id = request.query_params.get('invoice_id', None)
         if invoice_id:
             try:
@@ -42,7 +41,7 @@ class RoomViewSet(viewsets.ModelViewSet):
                 return Response(InvoiceSerializer(invoice).data, status=status.HTTP_200_OK)
             except Invoice.DoesNotExist:
                 return Response({"error": "Invoice not found for this room"}, status=status.HTTP_404_NOT_FOUND)
-        else:  # nếu không có invoice_id thì lấy danh sách invoices
+        else:
             invoices = Invoice.objects.filter(room_id=pk)
             paginator = InvoicePaginater()
             page = paginator.paginate_queryset(invoices, request)
