@@ -144,12 +144,12 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.RetrieveAPI
 
         return Response(serializers.UserSerializer(unassigned_students, many=True).data)
 
-    @action(methods=['post'], detail=False, url_path='update-token',
-            permission_classes=[permissions.IsAuthenticated])
-    def update_token(self, request):
-        token = request.data.get("expo_token")
-        if token:
-            request.user.expo_token = token
-            request.user.save()
-            return Response({"message": "Token saved successfully", "expo_token": request.user.expo_token})
-        return Response({"error": "No token provided"}, status=400)
+    # @action(methods=['post'], detail=False, url_path='update-token',
+    #         permission_classes=[permissions.IsAuthenticated])
+    # def update_token(self, request):
+    #     token = request.data.get("expo_token")
+    #     if token:
+    #         request.user.expo_token = token
+    #         request.user.save()
+    #         return Response({"message": "Token saved successfully", "expo_token": request.user.expo_token})
+    #     return Response({"error": "No token provided"}, status=400)
