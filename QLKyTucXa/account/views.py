@@ -94,7 +94,7 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.RetrieveAPI
 
         user = authenticate(username=username, password=password)
         if user is None:
-            return Response({"error": "Sai tài khoản hoặc mật khẩu"}, status=400)
+            return Response({"error": "Sai tên đăng nhập hoặc mật khẩu"}, status=status.HTTP_401_UNAUTHORIZED)
 
         CLIENT_ID = os.getenv('CLIENT_ID')
         try:

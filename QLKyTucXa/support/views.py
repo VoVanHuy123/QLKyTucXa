@@ -77,6 +77,10 @@ class ComplaintsViewSet(viewsets.ViewSet):
     def my_room_complaints(self, request):
         user = request.user
 
+        if not hasattr(user, 'student') or request.user.student is None:
+            return Response({"error": "Tài khoản không liên kết với sinh viên."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
         assignment = RoomAssignments.objects.get(student=user.student, active=True)
         complaints = self.get_queryset().filter(room=assignment.room)
 
@@ -93,6 +97,10 @@ class ComplaintsViewSet(viewsets.ViewSet):
     @action(detail=False, methods=['get'], url_path='my-complaints')
     def my_complaints(self, request):
         user = request.user
+
+        if not hasattr(user, 'student') or request.user.student is None:
+            return Response({"error": "Tài khoản không liên kết với sinh viên."},
+                            status=status.HTTP_400_BAD_REQUEST)
 
         assignment = RoomAssignments.objects.get(student=user.student, active=True)
         complaints = self.get_queryset().filter(room=assignment.room, student=user.student).order_by('-id')
