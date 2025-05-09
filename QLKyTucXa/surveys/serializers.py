@@ -2,10 +2,6 @@ from rest_framework import serializers
 from .models import Survey, SurveyResponse, SurveyQuestion
 from account.serializers import UserSerializer
 
-
-
-
-
 class SurveyQuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = SurveyQuestion

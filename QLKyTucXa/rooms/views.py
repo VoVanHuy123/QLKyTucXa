@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from rooms import perms, serializers, paginators
-from rooms.models import Room, Building, RoomChangeRequests,RoomAssignments
+from rooms.models import Room, Building, RoomChangeRequests, RoomAssignments
 from billing.models import Invoice
 from rest_framework import viewsets, status, permissions, generics
 from rest_framework.decorators import action
@@ -17,7 +17,7 @@ from account.models import Student
 # Create your views here.
 # bung hết api của Room
 class RoomViewSet(viewsets.ModelViewSet):
-    queryset = Room.objects.filter(active = True).order_by('room_number')
+    queryset = Room.objects.filter(active=True).order_by('room_number')
     serializer_class = serializers.RoomSerializer
     permission_classes = [perms.IsAdminOrReadOnly]
     pagination_class = paginators.RoomsPaginater
@@ -31,7 +31,8 @@ class RoomViewSet(viewsets.ModelViewSet):
         invoices = Invoice.objects.all()
         return Response(InvoiceSerializer(invoices, many=True).data)
 
-    @action(methods=['get'], detail=True, url_path='invoices',serializer_class = InvoiceSerializer, permission_classes=[permissions.IsAuthenticated])
+    @action(methods=['get'], detail=True, url_path='invoices', serializer_class=InvoiceSerializer,
+            permission_classes=[permissions.IsAuthenticated])
     def get_room_invoices(self, request, pk):
         # /romms/{id}/invocies/{id}
         invoice_id = request.query_params.get('invoice_id', None)
@@ -48,8 +49,9 @@ class RoomViewSet(viewsets.ModelViewSet):
             if page is not None:
                 serializer = InvoiceSerializer(page, many=True)
                 return paginator.get_paginated_response(serializer.data)
-            
+
             return Response(InvoiceSerializer(invoices, many=True).data, status=status.HTTP_200_OK)
+
     @action(methods=['post'], detail=True, url_path='register-member', permission_classes=[permissions.IsAdminUser])
     def register_member(self, request, pk):
         try:
@@ -72,7 +74,8 @@ class RoomViewSet(viewsets.ModelViewSet):
             return Response({"error": "Sinh viên không tồn tại"}, status=status.HTTP_404_NOT_FOUND)
 
         if RoomAssignments.objects.filter(room=room, bed_number=bed_number, active=True).exists():
-            return Response({"error": f"Giường số {bed_number} đã có người đăng ký"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": f"Giường số {bed_number} đã có người đăng ký"},
+                            status=status.HTTP_400_BAD_REQUEST)
 
         if RoomAssignments.objects.filter(student=student, active=True).exists():
             return Response({"error": "Sinh viên đã ở một phòng khác!"}, status=400)
@@ -90,6 +93,7 @@ class RoomViewSet(viewsets.ModelViewSet):
         room.save()
 
         return Response(serializers.RoomAssignmentsSerializer(assignment).data, status=status.HTTP_201_CREATED)
+
     @action(methods=['patch'], detail=True, url_path='remove-member', permission_classes=[permissions.IsAdminUser])
     def remove_member(self, request, pk):
         try:
@@ -132,7 +136,8 @@ class RoomChangeRequestViewSet(viewsets.ViewSet, generics.CreateAPIView, generic
     serializer_class = serializers.RoomChangeRequestSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-class RoomAssignmentsViewSet(viewsets.ViewSet,generics.RetrieveAPIView):
+
+class RoomAssignmentsViewSet(viewsets.ViewSet, generics.RetrieveAPIView):
     queryset = RoomAssignments.objects.filter(active=True)
     serializer_class = serializers.RoomAssignmentsSerializer
     permission_classes = [permissions.IsAdminUser]

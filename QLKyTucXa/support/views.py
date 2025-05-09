@@ -8,20 +8,18 @@ from rooms.models import RoomAssignments
 from django.db.models import Q
 
 
-
 class ComplaintsViewSet(viewsets.ViewSet):
     queryset = Complaints.objects.filter(active=True).order_by('-id')
     pagination_class = paginators.ComplaintsPaginator
     serializer_class = serializers.ComplaintsSerializer
     parser_classes = [parsers.JSONParser, parsers.MultiPartParser]
-    
 
     def get_permissions(self):
         if self.action in ['create']:
             return [IsStudentUser()]
         elif self.action in ['retrieve', 'complaints_responses']:
             return [IsAdminOrUserRoomOwnerReadOnly()]
-        elif self.action in ['list','resolve']:
+        elif self.action in ['list', 'resolve']:
             return [IsAdminUser()]
         return [IsAuthenticatedUser()]
 
@@ -147,25 +145,20 @@ class ComplaintsViewSet(viewsets.ViewSet):
 
             serializer = serializers.ComplaintsResponseSerializer(responses, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
+
     @action(detail=True, methods=['patch'], url_path='resolve')
     def resolve_complaint(self, request, pk):
-        """
-        API để cập nhật trạng thái của Complaint thành RESOLVED
-        """
         try:
             complaint = self.queryset.get(pk=pk)
             self.check_object_permissions(request, complaint)
         except Complaints.DoesNotExist:
             return Response({"error": "Không tìm thấy khiếu nại."}, status=status.HTTP_404_NOT_FOUND)
 
-        # Cập nhật trạng thái thành RESOLVED
         complaint.status = ComplaintsStatus.RESOLVED
         complaint.save()
 
-        # Trả về thông tin cập nhật
         serializer = self.serializer_class(complaint)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
 
 
 class ComplaintsResponseViewSet(viewsets.ViewSet):

@@ -4,11 +4,11 @@ from rest_framework.decorators import action
 
 from .models import Survey, SurveyResponse, SurveyQuestion
 from . import models, paginators, serializers
-from KyTucXa.perms import IsAdminUser, IsAuthenticatedUser, IsAdminOrReadOnly, IsObjectOwner, IsStudentOrAdminReadOnly
+from KyTucXa.perms import IsAdminUser, IsAuthenticatedUser, IsAdminOrReadOnly, IsObjectOwner, IsStudentOrAdmin
 from rest_framework.response import Response
 
 
-class SurveyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.DestroyAPIView,generics.CreateAPIView):
+class SurveyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.DestroyAPIView, generics.CreateAPIView):
     queryset = Survey.objects.filter(active=True).order_by('-id')
     pagination_class = paginators.SurveyPaginator
     serializer_class = serializers.SurveySerializer
@@ -40,9 +40,9 @@ class SurveyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.DestroyAPIV
     #         return Response(serializer.data, status=status.HTTP_200_OK)
 
     #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    
-    @action(detail=True, methods=['get', 'post'], url_path='survey-responses',serializer_class=serializers.SurveyResponseSerializer, permission_classes=[IsStudentOrAdminReadOnly])
+
+    @action(detail=True, methods=['get', 'post'], url_path='survey-responses',
+            serializer_class=serializers.SurveyResponseSerializer, permission_classes=[IsStudentOrAdmin])
     def create_responses(self, request, pk):
         try:
             survey = self.queryset.get(pk=pk)
@@ -53,9 +53,10 @@ class SurveyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.DestroyAPIV
             responses_data = request.data
             if not responses_data:
                 return Response({"error": "Không có dữ liệu được cung cấp."}, status=status.HTTP_400_BAD_REQUEST)
-            
+
             if not hasattr(request.user, 'student') or request.user.student is None:
-                return Response({"error": "Tài khoản không liên kết với sinh viên."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": "Tài khoản không liên kết với sinh viên."},
+                                status=status.HTTP_400_BAD_REQUEST)
 
             created_responses = []
             for response in responses_data:
@@ -74,9 +75,9 @@ class SurveyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.DestroyAPIV
         else:  # GET
             question_id = request.query_params.get('question')
             student_id = request.query_params.get('student')
-    
+
             responses = survey.responses.filter(active=True).order_by('id')
-            
+
             if question_id:
                 responses = responses.filter(question_id=question_id)
 
@@ -86,9 +87,31 @@ class SurveyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.DestroyAPIV
             paginator = self.pagination_class()
             page = paginator.paginate_queryset(responses, request)
             serializer = self.serializer_class(page or responses, many=True)
-            return paginator.get_paginated_response(serializer.data) if page else Response(serializer.data, status=status.HTTP_200_OK)
-        
-    @action(detail=True, methods=['get', 'post'], url_path='survey-questions',serializer_class=serializers.SurveyQuestionSerializer)
+            return paginator.get_paginated_response(serializer.data) if page else Response(serializer.data,
+                                                                                           status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'], url_path='survey-history', permission_classes=[IsAuthenticatedUser])
+    def get_surveys_history(self, request):
+        queryset = self.queryset
+        submitted_ids = SurveyResponse.objects.filter(student=request.user.student).values_list('survey_id', flat=True)
+        surveys = queryset.filter(id__in=submitted_ids)
+
+        q = self.request.query_params.get('q')
+        if q:
+            surveys = surveys.filter(Q(title__icontains=q) | Q(description__icontains=q))
+
+        paginator = self.pagination_class()
+        page = paginator.paginate_queryset(surveys, request)
+
+        if page is not None:
+            serializer = serializers.SurveySerializer(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
+
+        serializer = serializers.SurveySerializer(surveys, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['get', 'post'], url_path='survey-questions',
+            serializer_class=serializers.SurveyQuestionSerializer)
     def survey_questions(self, request, pk):
         if request.method == 'POST':
             try:
