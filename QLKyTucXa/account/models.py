@@ -24,3 +24,9 @@ class Student(User):
 
     class Meta:
         db_table = 'student'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['student_code', 'university'],
+                name='unique_student_code_university'
+            )
+        ]

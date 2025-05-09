@@ -4,18 +4,6 @@ from account.serializers import UserSerializer
 from rooms.serializers import RoomSerializer
 
 
-class ComplaintsSerializer(serializers.ModelSerializer):
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        data['student'] = UserSerializer(instance.student).data
-        data['room']=RoomSerializer(instance.room).data
-        return data
-
-    class Meta:
-        model = Complaints
-        fields = "__all__"
-
-
 class ComplaintsResponseSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -30,3 +18,17 @@ class ComplaintsResponseSerializer(serializers.ModelSerializer):
                 'write_only': True
             }
         }
+class ComplaintsSerializer(serializers.ModelSerializer):
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['student'] = UserSerializer(instance.student).data
+        data['room']=RoomSerializer(instance.room).data
+        data['image'] = instance.image.url if instance.image else ''
+        data['responses'] = ComplaintsResponseSerializer(instance.responses, many = True).data
+        return data
+
+    class Meta:
+        model = Complaints
+        fields = "__all__"
+
+

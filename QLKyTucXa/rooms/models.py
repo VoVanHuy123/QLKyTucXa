@@ -45,6 +45,13 @@ class RoomAssignments(BaseModel):
     bed_number = models.IntegerField(null=True)
     class Meta:
         db_table = "room_assignments"
+        constraints = [
+            models.UniqueConstraint(
+                fields=['student', 'room', 'created_date'],
+                name='unique_student_room_date'
+            )
+        ]
+
 
 
 class RoomChangeStatus(models.TextChoices):
