@@ -85,6 +85,7 @@ WSGI_APPLICATION = 'QLKyTucXa.wsgi.application'
 
 import dotenv
 import os
+
 dotenv.load_dotenv()
 # dotenv.load_dotenv("/home/vovanhuy/QLKyTucXa/QLKyTucXa/.env")
 # DATABASES = {
@@ -97,7 +98,6 @@ dotenv.load_dotenv()
 #             'PORT': '3306',
 #      }
 #  }
-
 
 
 DATABASES = {
@@ -131,6 +131,11 @@ OAUTH2_PROVIDER = {'OAUTH2_BACKEND_CLASS': 'oauth2_provider.oauth2_backends.JSON
 
 CLIENT_ID = os.getenv('CLIENT_ID')
 CLIENT_SECRET = os.getenv('CLIENT_SECRET')
+
+VNPAY_RETURN_URL = os.getenv('VNPAY_RETURN_URL')
+VNPAY_PAYMENT_URL = os.getenv('VNPAY_PAYMENT_URL')
+VNPAY_TMN_CODE = os.getenv('VNPAY_TMN_CODE')
+VNPAY_HASH_SECRET_KEY = os.getenv('VNPAY_HASH_SECRET_KEY')
 
 AUTH_USER_MODEL = 'account.User'
 # Password validation
