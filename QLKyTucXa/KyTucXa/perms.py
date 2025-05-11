@@ -34,13 +34,13 @@ class IsAdminOrReadOnly(IsAuthenticatedUser):
         return IsAdminUser().has_permission(request, view)
 
 
-class IsAdminOrUserRoomOwnerReadOnly(IsAuthenticatedUser):
-    @staticmethod
-    def get_user_room_ids(user):
-        if hasattr(user, 'student'):
-            return RoomAssignments.objects.filter(student=user.student, active=True).values_list('room_id', flat=True)
-        return []
+def get_user_room_ids(user):
+    if hasattr(user, 'student'):
+        return set(RoomAssignments.objects.filter(student=user.student, active=True).values_list('room_id', flat=True))
+    return set()
 
+
+class IsAdminOrUserRoomOwnerReadOnly(IsAuthenticatedUser):
     def has_permission(self, request, view):
         if request.method in permissions.SAFE_METHODS:
             return super().has_permission(request, view)
@@ -48,7 +48,13 @@ class IsAdminOrUserRoomOwnerReadOnly(IsAuthenticatedUser):
 
     def has_object_permission(self, request, view, obj):
         return IsAdminUser().has_permission(request, view) or (
-                obj.room.id in self.get_user_room_ids(request.user))
+                obj.room.id in get_user_room_ids(request.user))
+
+
+class IsAdminOrUserRoomOwner(IsAuthenticatedUser):
+    def has_object_permission(self, request, view, obj):
+        return IsAdminUser().has_permission(request, view) or (
+                obj.room.id in get_user_room_ids(request.user))
 
 
 class IsAdminOrUserComplaintsOwner(IsAuthenticatedUser):
