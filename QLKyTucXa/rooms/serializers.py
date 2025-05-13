@@ -20,22 +20,20 @@ class RoomAssignmentsSerializer(serializers.ModelSerializer):
 class RoomSerializer(serializers.ModelSerializer):
     building = BuildingSerializer
     # room_assignments = RoomAssignmentsSerializer(many=True,read_only=True)
-    room_assignments = RoomAssignmentsSerializer(
-        many=True,
-        read_only=True,
-        source='room_assignments_active'
-    )
+    # room_assignments = RoomAssignmentsSerializer(
+    #     many=True,
+    #     read_only=True,
+    #     source='room_assignments_active'
+    # )
     class Meta:
         model = Room
-        fields = ['id', 'room_number', 'room_type', 'total_beds', 'available_beds', 'monthly_fee', 'status', 'building','floor','room_assignments']
+        fields = ['id', 'room_number', 'room_type', 'total_beds', 'available_beds', 'monthly_fee', 'status', 'building','floor']
     
 
 
 class RoomChangeRequestSerializer(serializers.ModelSerializer):
-    student = UserSerializer
-    current_room = RoomSerializer
-    requested_room = RoomSerializer
+    student = UserSerializer()
 
     class Meta:
         model = RoomChangeRequests
-        fields = ['reason', 'status', 'student', 'current_room', 'requested_room']
+        fields = ['id','reason', 'status', 'student', 'current_room', 'requested_room']

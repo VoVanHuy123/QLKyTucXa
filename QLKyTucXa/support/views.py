@@ -6,6 +6,7 @@ from KyTucXa.perms import IsAuthenticatedUser, IsStudentUser, IsAdminOrUserRoomO
 from rest_framework.response import Response
 from rooms.models import RoomAssignments
 from django.db.models import Q
+from django_filters.rest_framework import DjangoFilterBackend
 
 
 class ComplaintsViewSet(viewsets.ViewSet):
@@ -28,7 +29,7 @@ class ComplaintsViewSet(viewsets.ViewSet):
 
         q = self.request.query_params.get('q')
         if q:
-            queryset = queryset.filter(Q(title__icontains=q) | Q(description__icontains=q))
+            queryset = queryset.filter(Q(title__icontains=q) | Q(description__icontains=q) | Q(status__exact=q))
 
         return queryset
 
