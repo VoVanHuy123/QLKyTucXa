@@ -14,8 +14,6 @@ from billing.paginators import InvoicePaginater
 from account.models import Student
 
 
-# Create your views here.
-# bung hết api của Room
 class RoomViewSet(viewsets.ModelViewSet):
     queryset = Room.objects.filter(active=True).order_by('room_number')
     serializer_class = serializers.RoomSerializer
@@ -135,6 +133,18 @@ class RoomViewSet(viewsets.ModelViewSet):
         
         # Serialize kết quả
         serializer = serializers.RoomAssignmentsSerializer(assignments, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(methods=['get'], detail=False, url_path='my-room', permission_classes=[perms.IsStudentUser])
+    def my_room(self, request):
+        user = request.user
+
+        try:
+            assignment = RoomAssignments.objects.get(student=user.student, active=True)
+        except RoomAssignments.DoesNotExist:
+            return Response({"error": "Sinh viên chưa có phòng."}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = self.serializer_class(assignment.room)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
