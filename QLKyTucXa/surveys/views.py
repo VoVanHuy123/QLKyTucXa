@@ -61,7 +61,7 @@ class SurveyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.DestroyAPIV
             created_responses = []
             for response in responses_data:
                 response['survey'] = survey.id
-                response['student'] = request.user.student.id  # lấy student từ user
+                response['student'] = request.user.student.id
 
                 serializer = serializers.SurveyResponseSerializer(data=response)
                 if serializer.is_valid():
