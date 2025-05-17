@@ -14,15 +14,15 @@ class NotiViewSet(viewsets.ViewSet,generics.ListAPIView,generics.CreateAPIView,g
     serializer_class = NotiSerializers
     permission_classes = [IsAdminOrReadOnly]
     pagination_class = NotiPaginater
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         notification = serializer.save()
 
-        # Nếu là urgent thì gửi push
         if notification.is_urgent:
-            users = User.objects.exclude(expo_token=None).exclude(expo_token="")  # lấy user có token
-            print(users)
+            users = User.objects.exclude(expo_token=None).exclude(expo_token="")
+
             for user in users:
                 send_push_notification(
                     user.expo_token,

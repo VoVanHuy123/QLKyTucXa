@@ -26,7 +26,7 @@ class ComplaintsSerializer(serializers.ModelSerializer):
         data['student'] = UserSerializer(instance.student).data
         data['room'] = RoomSerializer(instance.room).data
         data['image'] = instance.image.url if instance.image else ''
-        data['responses'] = ComplaintsResponseSerializer(instance.responses, many=True).data
+        # data['responses'] = ComplaintsResponseSerializer(instance.responses, many=True).data
         return data
 
     class Meta:
