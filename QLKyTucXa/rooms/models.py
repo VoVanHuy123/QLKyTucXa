@@ -4,7 +4,7 @@ from account.models import Student
 
 
 class Building(BaseModel):
-    building_name = models.CharField(max_length=50)
+    building_name = models.CharField(max_length=50, unique=True)
     total_floors = models.IntegerField()
 
     def __str__(self):
@@ -18,6 +18,7 @@ class RoomStatus(models.TextChoices):
     EMPTY = 'Empty', 'Empty'
     FULL = 'Full', 'Full'
 
+
 class Room(BaseModel):
     building = models.ForeignKey('Building', on_delete=models.CASCADE)
     room_number = models.CharField(max_length=10, unique=True)
@@ -30,7 +31,7 @@ class Room(BaseModel):
 
     def __str__(self):
         return self.room_number
-    
+
     @property
     def room_assignments_active(self):
         return self.room_assignments.filter(active=True)
@@ -40,9 +41,10 @@ class Room(BaseModel):
 
 
 class RoomAssignments(BaseModel):
-    student = models.ForeignKey(Student, on_delete=models.PROTECT,related_name="room_assignments")
-    room = models.ForeignKey('Room', on_delete=models.PROTECT,related_name="room_assignments")
+    student = models.ForeignKey(Student, on_delete=models.PROTECT, related_name="room_assignments")
+    room = models.ForeignKey('Room', on_delete=models.PROTECT, related_name="room_assignments")
     bed_number = models.IntegerField(null=True)
+
     class Meta:
         db_table = "room_assignments"
         constraints = [
@@ -53,11 +55,11 @@ class RoomAssignments(BaseModel):
         ]
 
 
-
 class RoomChangeStatus(models.TextChoices):
     PENDING = 'Pending', 'Pending'
     APPROVED = 'Approved', 'Approved'
     REJECTED = 'Rejected', 'Rejected'
+
 
 class RoomChangeRequests(BaseModel):
     student = models.ForeignKey(Student, on_delete=models.PROTECT)

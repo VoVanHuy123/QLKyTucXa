@@ -1,8 +1,11 @@
-from symtable import Class
-
 from django.contrib import admin
+from django.db.models import Sum, Q, FloatField
+from django.db.models.functions import  Coalesce
+from django.template.response import TemplateResponse
+from django.urls import path
+
 from rooms.models import Room, Building, RoomChangeRequests, RoomAssignments
-from billing.models import Invoice, InvoiceItems
+from billing.models import Invoice, InvoiceItems, InvoiceStatus
 from account.models import User, Student
 from support.models import Complaints, ComplaintsResponse
 from surveys.models import Survey, SurveyResponse, SurveyQuestion
@@ -13,6 +16,76 @@ class MyAdminSite(admin.AdminSite):
     site_header = "Quản lý ký túc xá"
     site_title = "Quản lý ký túc xá"
     index_title = "Chào mừng đến với trang quản trị"
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path('revenue-stats/', self.stats_view, name='revenue-stats')
+        ]
+        return custom_urls + urls
+
+    def stats_view(self, request):
+        revenue_stats = []
+        months = [f"{i:02d}" for i in range(1, 13)]
+        context = self.each_context(request)
+
+        year = request.GET.get('year')
+        month = request.GET.get('month')
+        quarter = request.GET.get('quarter')
+
+        if year or month or quarter:
+            building_filters = Q(rooms__invoice__status=InvoiceStatus.PAID)
+            invoice_filters = Q(status=InvoiceStatus.PAID)
+
+            if year:
+                building_filters &= Q(rooms__invoice__created_date__year=year)
+                invoice_filters &= Q(created_date__year=year)
+
+            if quarter:
+                quarter_to_months = {
+                    'Q1': [1, 2, 3],
+                    'Q2': [4, 5, 6],
+                    'Q3': [7, 8, 9],
+                    'Q4': [10, 11, 12],
+                }
+                months_for_quarter = quarter_to_months.get(quarter)
+                if months_for_quarter:
+                    building_filters &= Q(rooms__invoice__created_date__month__in=months_for_quarter)
+                    invoice_filters &= Q(created_date__month__in=months_for_quarter)
+
+            elif month:
+                building_filters &= Q(rooms__invoice__created_date__month=month)
+                invoice_filters &= Q(created_date__month=month)
+
+            per_building_totals = Building.objects.annotate(
+                total_amount=Coalesce(
+                    Sum('rooms__invoice__total_amount', filter=building_filters, output_field=FloatField()),
+                    0.0,
+                    output_field=FloatField()
+                )
+            ).values('building_name', 'total_amount').order_by('building_name')
+
+            overall_total = Invoice.objects.filter(invoice_filters).aggregate(
+                total=Sum('total_amount', output_field=FloatField())
+            )
+
+            summary_row = {
+                'building_name': 'Tổng',
+                'total_amount': overall_total['total']
+            }
+
+            revenue_stats = list(per_building_totals) + [summary_row]
+
+        context.update({
+            'title': 'Thống kê doanh thu',
+            'revenue_stats': revenue_stats,
+            'months': months,
+            'year': year or '',
+            'month': month or '',
+            'quarter': quarter or ''
+        })
+
+        return TemplateResponse(request, 'admin/revenue-stats.html', context)
 
 
 ###
@@ -113,6 +186,7 @@ class MyComplaintAdmin(admin.ModelAdmin):
 
     def student_name(self, obj):
         return obj.student.student_code
+
 
 ###
 class SurveyQuestionInline(admin.StackedInline):
