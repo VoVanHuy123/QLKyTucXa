@@ -12,6 +12,7 @@ from rooms.models import Room, RoomChangeRequests, RoomAssignments
 from account import serializers, paginators, perms
 from rooms.serializers import RoomChangeRequestSerializer
 from account.serializers import UserSerializer
+from KyTucXa import perms
 import dotenv
 import os
 
@@ -28,6 +29,7 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.RetrieveAPI
     queryset = Student.objects.filter(is_active=True)
     serializer_class = serializers.UserSerializer
     parser_classes = [parsers.JSONParser, parsers.MultiPartParser]
+    permission_classes = [perms.IsAdminUser]
 
     def str_to_bool(self, val):
         if isinstance(val, bool):
@@ -84,7 +86,7 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.RetrieveAPI
         roomRequests = RoomChangeRequests.objects.filter(user_id=pk)
         return Response(RoomChangeRequestSerializer(roomRequests, many=True).data)
 
-    @action(methods=['post'], detail=False)
+    @action(methods=['post'], detail=False, permission_classes=[])
     def login(self, request):
         username = request.data.get('username')
         password = request.data.get('password')
