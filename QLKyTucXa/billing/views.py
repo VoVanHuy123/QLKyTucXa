@@ -9,7 +9,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .filter import InvoicesFilter
 from .paginators import InvoicePaginater
 from .perms import IsAdminOrUserInvoices
-from KyTucXa.perms import IsAdminOrUserRoomOwnerReadOnly
+from KyTucXa.perms import IsAdminOrUserRoomOwnerReadOnly, IsAdminOrUserRoomOwner
 from rooms.models import RoomAssignments
 from django.conf import settings
 from .vnpay import vnpay
@@ -45,7 +45,7 @@ class InvoiceViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.Retrieve
         serializer = self.serializer_class(invoices, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=['get'], url_path='vnpay_payment_url')
+    @action(detail=True, methods=['post'], url_path='vnpay_payment_url', permission_classes=[IsAdminOrUserRoomOwner])
     def vnpay_payment_url(self, request, pk=None):
         invoice = self.get_object()
         order_id = invoice.id
@@ -73,7 +73,6 @@ class InvoiceViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.Retrieve
         vnp.requestData['vnp_ExpireDate'] = expire_time.strftime('%Y%m%d%H%M%S')
 
         payment_url = vnp.get_payment_url(settings.VNPAY_PAYMENT_URL, settings.VNPAY_HASH_SECRET_KEY)
-        print(payment_url)
         return Response({'payment_url': payment_url})
 
     @action(detail=False, methods=['get'], url_path='vnpay_payment_return')
