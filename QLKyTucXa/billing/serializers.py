@@ -12,7 +12,7 @@ class InvoiceItemSerializer(serializers.ModelSerializer):
 
 
 class InvoiceSerializer(serializers.ModelSerializer):
-    room = RoomSerializer
+    room = RoomSerializer()
     items = InvoiceItemSerializer(many=True)
 
     class Meta:

@@ -7,23 +7,25 @@ from rooms.views import RoomViewSet, BuidingViewSet,RoomChangeRequestViewSet,Roo
 from account.views import UserViewSet
 from billing.views import InvoiceViewSet
 from support.views import ComplaintsViewSet, ComplaintsResponseViewSet
-from surveys.views import SurveyViewSet, SurveyQuestionViewSet
+from surveys.views import SurveyViewSet, SurveyQuestionViewSet,StatisticsViewSet
 from notifications.views import NotiViewSet
 
-routes = DefaultRouter()
-routes.register('users', UserViewSet, basename='user')
-routes.register('rooms', RoomViewSet, basename='room')
-routes.register('room-change-requests', RoomChangeRequestViewSet, basename="room-change-requests")
-routes.register('buildings', BuidingViewSet, basename='building')
-routes.register('invoices', InvoiceViewSet, basename='invoices')
-routes.register('complaints', ComplaintsViewSet, basename='complaints')
-routes.register('complaints-responses', ComplaintsResponseViewSet, basename='complaints-responses')
-routes.register('room-assignments', RoomAssignmentsViewSet, basename='room-assignments')
-routes.register('surveys', SurveyViewSet, basename='surveys')
-routes.register('survey-questions', SurveyQuestionViewSet, basename='survey-questions')
-routes.register('notifications', NotiViewSet, basename='notifications')
+routers = DefaultRouter()
+routers.register('users', UserViewSet, basename='user')
+routers.register('rooms', RoomViewSet, basename='room')
+routers.register('room-change-requests', RoomChangeRequestViewSet, basename="room-change-requests")
+routers.register('buildings', BuidingViewSet, basename='building')
+routers.register('invoices', InvoiceViewSet, basename='invoices')
+routers.register('complaints', ComplaintsViewSet, basename='complaints')
+routers.register('complaints-responses', ComplaintsResponseViewSet, basename='complaints-responses')
+routers.register('room-assignments', RoomAssignmentsViewSet, basename='room-assignments')
+routers.register('surveys', SurveyViewSet, basename='surveys')
+routers.register('survey-questions', SurveyQuestionViewSet, basename='survey-questions')
+routers.register('notifications', NotiViewSet, basename='notifications')
+routers.register('statistics', StatisticsViewSet, basename='statistics')
+
 
 urlpatterns = [
-    path('', include(routes.urls)),
+    path('', include(routers.urls)),
 
 ]
