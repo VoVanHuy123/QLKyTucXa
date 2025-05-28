@@ -20,7 +20,7 @@ class RoomStatus(models.TextChoices):
 
 
 class Room(BaseModel):
-    building = models.ForeignKey('Building', on_delete=models.CASCADE)
+    building = models.ForeignKey('Building', on_delete=models.CASCADE,related_name="rooms")
     room_number = models.CharField(max_length=10, unique=True)
     room_type = models.CharField(max_length=50, null=True)
     floor = models.IntegerField(null=True)
