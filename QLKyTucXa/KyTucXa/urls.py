@@ -7,7 +7,7 @@ from rooms.views import RoomViewSet, BuidingViewSet,RoomChangeRequestViewSet,Roo
 from account.views import UserViewSet
 from billing.views import InvoiceViewSet
 from support.views import ComplaintsViewSet, ComplaintsResponseViewSet
-from surveys.views import SurveyViewSet, SurveyQuestionViewSet,StatisticsViewSet
+from surveys.views import SurveyViewSet, SurveyQuestionViewSet, StatisticsViewSet
 from notifications.views import NotiViewSet
 
 routers = DefaultRouter()
