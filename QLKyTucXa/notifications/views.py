@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from rest_framework import viewsets,generics,permissions,status
+from rest_framework import viewsets, generics, permissions, status
 from .models import Notification
 from .serializers import NotiSerializers
 from rest_framework.decorators import action
@@ -8,12 +8,23 @@ from .paginators import NotiPaginater
 from config.PushNoti import send_push_notification
 from account.models import User
 from rest_framework.response import Response
+
+
 # Create your views here.
-class NotiViewSet(viewsets.ViewSet,generics.ListAPIView,generics.CreateAPIView,generics.RetrieveAPIView):
-    queryset = Notification.objects.filter(active = True)
+class NotiViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView, generics.RetrieveAPIView):
+    queryset = Notification.objects.filter(active=True)
     serializer_class = NotiSerializers
     permission_classes = [IsAdminOrReadOnly]
     pagination_class = NotiPaginater
+
+    def get_queryset(self):
+        queryset = self.queryset
+
+        q = self.request.query_params.get('q')
+        if q and q.lower() != "all":
+            queryset = queryset.filter(announcement_type=q)
+
+        return queryset
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)

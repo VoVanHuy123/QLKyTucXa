@@ -18,7 +18,7 @@ class RoomAssignmentsSerializer(serializers.ModelSerializer):
         fields = ['id','student','room','bed_number','student_detail',"active"]
 
 class RoomSerializer(serializers.ModelSerializer):
-    building = BuildingSerializer
+    building = BuildingSerializer()
     # room_assignments = RoomAssignmentsSerializer(many=True,read_only=True)
     # room_assignments = RoomAssignmentsSerializer(
     #     many=True,

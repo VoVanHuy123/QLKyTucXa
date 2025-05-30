@@ -3,6 +3,10 @@ from .models import User, Student
 
 
 class UserSerializer(serializers.ModelSerializer):
+    student_code = serializers.CharField(write_only=True)
+    university = serializers.CharField(write_only=True)
+    phone_number = serializers.CharField(write_only=True)
+
     def to_representation(self, instance):
         data = super().to_representation(instance)
 
@@ -30,13 +34,9 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = Student
         fields = ['id', 'first_name', 'last_name', 'email', 'username', 'password', 'avatar', 'role', 'is_staff',
-                  "is_first_access", 'phone_number', 'student_code', 'university']
-        read_only = ('student_code', 'university', 'is_staff')
+                  "is_first_access", 'student_code', 'university', 'phone_number']
         extra_kwargs = {
             'password': {
-                'write_only': True,
-
+                'write_only': True
             },
-            # 'is_first_access': {'required': False}
-
         }

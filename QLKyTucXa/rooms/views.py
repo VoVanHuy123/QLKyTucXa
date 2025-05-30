@@ -121,17 +121,14 @@ class RoomViewSet(viewsets.ModelViewSet):
         return Response({"message": "Xóa thành viên khỏi phòng thành công!"}, status=status.HTTP_200_OK)
     @action(methods=['get'], detail=True, url_path='room-assignments',serializer_class=serializers.RoomAssignmentsSerializer, permission_classes=[permissions.IsAuthenticated])
     def room_assignments(self, request, pk=None):
-        
-        # Lấy phòng (Room)
+
         try:
             room = Room.objects.get(pk=pk, active=True)
         except Room.DoesNotExist:
             return Response({"error": "Phòng không tồn tại"}, status=status.HTTP_404_NOT_FOUND)
 
-        # Lấy tất cả RoomAssignments của phòng này với active=True
         assignments = RoomAssignments.objects.filter(room=room, active=True)
         
-        # Serialize kết quả
         serializer = serializers.RoomAssignmentsSerializer(assignments, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -149,7 +146,7 @@ class RoomViewSet(viewsets.ModelViewSet):
 
 
 class BuidingViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIView):
-    queryset = Building.objects.filter(active=True)
+    queryset = Building.objects.filter(active=True).order_by("building_name")
     serializer_class = serializers.BuildingSerializer
     permission_classes = [perms.IsAdminOrReadOnly]
 
