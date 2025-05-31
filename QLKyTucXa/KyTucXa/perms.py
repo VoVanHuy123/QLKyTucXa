@@ -1,5 +1,4 @@
 from rest_framework import permissions
-from rest_framework import permissions
 from rooms.models import RoomAssignments
 
 
@@ -25,6 +24,11 @@ class IsSuperUser(IsAdminUser):
 
     def has_object_permission(self, request, view, obj):
         return super().has_object_permission(request, view, obj) and request.user.is_superuser
+
+
+class IsObjectOwner(IsAuthenticatedUser):
+    def has_object_permission(self, request, view, obj):
+        return super().has_object_permission(request, view, obj) and obj.user == request.user
 
 
 class IsAdminOrReadOnly(IsAuthenticatedUser):
@@ -57,14 +61,11 @@ class IsAdminOrUserRoomOwner(IsAuthenticatedUser):
                 obj.room.id in get_user_room_ids(request.user))
 
 
-class IsAdminOrUserComplaintsOwner(IsAuthenticatedUser):
+class IsAdminOrUserObjectOwner(IsAuthenticatedUser):
     def has_object_permission(self, request, view, obj):
-        return IsAdminUser().has_permission(request, view) or obj.student.id == request.user.id
-
-
-class IsObjectOwner(IsAuthenticatedUser):
-    def has_object_permission(self, request, view, obj):
-        return super().has_object_permission(request, view, obj) and obj.user == request.user
+        if hasattr(request.user, 'student'):
+            return IsAdminUser().has_permission(request, view) or obj.student == request.user.student
+        return IsAdminUser().has_permission(request, view) or obj.user == request.user
 
 
 class IsStudentUser(IsAuthenticatedUser):

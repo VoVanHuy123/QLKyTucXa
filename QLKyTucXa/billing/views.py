@@ -32,7 +32,11 @@ class InvoiceViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.Retrieve
             return Response({"error": "Tài khoản không liên kết với sinh viên."},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        assignment = RoomAssignments.objects.get(student=user.student, active=True)
+        try:
+            assignment = RoomAssignments.objects.get(student=user.student, active=True)
+        except RoomAssignments.DoesNotExist:
+            return Response({"error": "Sinh viên chưa có phòng."}, status=status.HTTP_400_BAD_REQUEST)
+
         invoices = self.queryset.filter(room=assignment.room)
 
         paginator = self.pagination_class()

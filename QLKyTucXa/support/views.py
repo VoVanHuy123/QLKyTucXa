@@ -41,6 +41,7 @@ class ComplaintsViewSet(viewsets.ViewSet):
             assignment = RoomAssignments.objects.get(student=user.student, active=True)
         except RoomAssignments.DoesNotExist:
             return Response({"error": "Sinh viên chưa có phòng."}, status=status.HTTP_400_BAD_REQUEST)
+
         data["room"] = assignment.room.id
         data["student"] = user.student.id
         data['active'] = True
@@ -82,7 +83,11 @@ class ComplaintsViewSet(viewsets.ViewSet):
             return Response({"error": "Tài khoản không liên kết với sinh viên."},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        assignment = RoomAssignments.objects.get(student=user.student, active=True)
+        try:
+            assignment = RoomAssignments.objects.get(student=user.student, active=True)
+        except RoomAssignments.DoesNotExist:
+            return Response({"error": "Sinh viên chưa có phòng."}, status=status.HTTP_400_BAD_REQUEST)
+
         complaints = self.get_queryset().filter(room=assignment.room)
 
         paginator = self.pagination_class()
@@ -103,7 +108,11 @@ class ComplaintsViewSet(viewsets.ViewSet):
             return Response({"error": "Tài khoản không liên kết với sinh viên."},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        assignment = RoomAssignments.objects.get(student=user.student, active=True)
+        try:
+            assignment = RoomAssignments.objects.get(student=user.student, active=True)
+        except RoomAssignments.DoesNotExist:
+            return Response({"error": "Sinh viên chưa có phòng."}, status=status.HTTP_400_BAD_REQUEST)
+
         complaints = self.get_queryset().filter(room=assignment.room, student=user.student).order_by('-id')
 
         paginator = self.pagination_class()

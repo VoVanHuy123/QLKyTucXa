@@ -1,4 +1,6 @@
 from django.shortcuts import render
+from rest_framework.exceptions import ValidationError
+
 from rooms import perms, serializers, paginators
 from rooms.models import Room, Building, RoomChangeRequests, RoomAssignments
 from billing.models import Invoice
@@ -9,7 +11,7 @@ from billing.serializers import InvoiceSerializer
 from rest_framework import filters
 from KyTucXa import perms
 from django_filters.rest_framework import DjangoFilterBackend
-from .filter import RoomFilter,RoomChangeRequestFilter
+from .filter import RoomFilter, RoomChangeRequestFilter
 from billing.paginators import InvoicePaginater
 from account.models import Student
 
@@ -119,7 +121,9 @@ class RoomViewSet(viewsets.ModelViewSet):
         room.save()
 
         return Response({"message": "Xóa thành viên khỏi phòng thành công!"}, status=status.HTTP_200_OK)
-    @action(methods=['get'], detail=True, url_path='room-assignments',serializer_class=serializers.RoomAssignmentsSerializer, permission_classes=[permissions.IsAuthenticated])
+
+    @action(methods=['get'], detail=True, url_path='room-assignments',
+            serializer_class=serializers.RoomAssignmentsSerializer, permission_classes=[permissions.IsAuthenticated])
     def room_assignments(self, request, pk=None):
 
         try:
@@ -128,7 +132,7 @@ class RoomViewSet(viewsets.ModelViewSet):
             return Response({"error": "Phòng không tồn tại"}, status=status.HTTP_404_NOT_FOUND)
 
         assignments = RoomAssignments.objects.filter(room=room, active=True)
-        
+
         serializer = serializers.RoomAssignmentsSerializer(assignments, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -151,15 +155,34 @@ class BuidingViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIV
     permission_classes = [perms.IsAdminOrReadOnly]
 
 
-class RoomChangeRequestViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.RetrieveAPIView,generics.ListAPIView,
+class RoomChangeRequestViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.RetrieveAPIView, generics.ListAPIView,
                                generics.UpdateAPIView):
     queryset = RoomChangeRequests.objects.filter(active=True)
     serializer_class = serializers.RoomChangeRequestSerializer
     permission_classes = [permissions.IsAuthenticated]
     pagination_class = paginators.RoomChangeRequestsPaginater
-     # lọc
+
     filter_backends = [DjangoFilterBackend]
     filterset_class = RoomChangeRequestFilter
+
+    def get_permissions(self):
+        if self.action in ['create']:
+            return [perms.IsStudentUser()]
+        elif self.action in ['list', 'update', 'partial_update', 'destroy']:
+            return [perms.IsAdminUser()]
+        elif self.action in ['retrieve']:
+            return [perms.IsAdminOrUserObjectOwner()]
+        return [perms.IsAuthenticatedUser()]
+
+    def perform_create(self, serializer):
+        user = self.request.user
+
+        try:
+            assignment = RoomAssignments.objects.get(student=user.student, active=True)
+        except RoomAssignments.DoesNotExist:
+            raise ValidationError({"error": "Sinh viên chưa có phòng."})
+
+        serializer.save(student=user.student, current_room=assignment.room)
 
 
 class RoomAssignmentsViewSet(viewsets.ViewSet, generics.RetrieveAPIView):
