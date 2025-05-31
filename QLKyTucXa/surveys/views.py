@@ -14,7 +14,7 @@ class SurveyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.DestroyAPIV
     queryset = Survey.objects.filter(active=True).order_by('-id')
     pagination_class = paginators.SurveyPaginator
     serializer_class = serializers.SurveySerializer
-    permission_classes = [IsAdminOrReadOnly, IsObjectOwner]
+    permission_classes = [IsAdminOrReadOnly]
 
     def get_queryset(self):
         queryset = self.queryset
