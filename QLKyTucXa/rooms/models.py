@@ -1,4 +1,6 @@
 from django.db import models
+from django_mysql.models import EnumField
+
 from KyTucXa.models import BaseModel
 from account.models import Student
 
@@ -26,7 +28,7 @@ class Room(BaseModel):
     floor = models.IntegerField(null=True)
     total_beds = models.IntegerField()
     available_beds = models.IntegerField()
-    status = models.CharField(max_length=20, choices=RoomStatus.choices, default=RoomStatus.EMPTY)
+    status = EnumField(choices=RoomStatus.choices, default=RoomStatus.EMPTY)
     monthly_fee = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
@@ -66,7 +68,7 @@ class RoomChangeRequests(BaseModel):
     current_room = models.ForeignKey('Room', related_name='current_room', on_delete=models.PROTECT)
     requested_room = models.ForeignKey('Room', related_name='requested_room', on_delete=models.PROTECT)
     reason = models.CharField(max_length=500)
-    status = models.CharField(max_length=50, choices=RoomChangeStatus.choices, default=RoomChangeStatus.PENDING)
+    status = EnumField(choices=RoomChangeStatus.choices, default=RoomChangeStatus.PENDING)
 
     class Meta:
         db_table = "room_change_requests"
