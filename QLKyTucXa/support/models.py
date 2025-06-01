@@ -1,4 +1,6 @@
 from django.db import models
+from django_mysql.models import EnumField
+
 from KyTucXa.models import BaseModel
 from rooms.models import Room
 from account.models import Student, User
@@ -16,7 +18,7 @@ class Complaints(BaseModel):
     title = models.CharField(max_length=100, null=False)
     description = models.TextField(null=False)
     image = CloudinaryField(blank=True, null=True)
-    status = models.CharField(max_length=20, choices=ComplaintsStatus.choices, default=ComplaintsStatus.PENDING)
+    status = EnumField(choices=ComplaintsStatus.choices, default=ComplaintsStatus.PENDING)
 
     class Meta:
         db_table = "complaints"

@@ -21,8 +21,6 @@ class RoomViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.RoomSerializer
     permission_classes = [perms.IsAdminOrReadOnly]
     pagination_class = paginators.RoomsPaginater
-
-    # lọc
     filter_backends = [DjangoFilterBackend]
     filterset_class = RoomFilter
 

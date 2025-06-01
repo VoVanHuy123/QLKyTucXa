@@ -1,4 +1,6 @@
 from django.db import models
+from django_mysql.models import EnumField
+
 from KyTucXa.models import BaseModel
 from rooms.models import Room
 
@@ -11,7 +13,7 @@ class Invoice(BaseModel):
     room = models.ForeignKey(Room, on_delete=models.CASCADE)
     # amount = models.DecimalField(max_digits=10, decimal_places=2)
     total_amount = models.FloatField()
-    status = models.CharField(max_length=20, choices=InvoiceStatus.choices, default=InvoiceStatus.UNPAID)
+    status = EnumField(choices=InvoiceStatus.choices, default=InvoiceStatus.UNPAID)
 
     def __str__(self):
         return self.description
