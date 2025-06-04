@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.core.management.base import BaseCommand
 from faker import Faker
 import random
@@ -112,6 +114,7 @@ class Command(BaseCommand):
                 room=room,
                 total_amount=1300000,
                 status='Unpaid',
+                invoice_month=date(date.today().year, 5, 1)
             )
             self.stdout.write(f'Created Invoice for Room {room.room_number}')
 

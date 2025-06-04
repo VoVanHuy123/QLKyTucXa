@@ -1,8 +1,13 @@
+from datetime import datetime
+
 from django.contrib import admin
+from django.db import models
 from django.db.models import Sum, Q, FloatField
-from django.db.models.functions import  Coalesce
+from django.db.models.functions import Coalesce
+from django.forms import formset_factory
 from django.template.response import TemplateResponse
 from django.urls import path
+from django.utils.timezone import make_aware
 
 from rooms.models import Room, Building, RoomChangeRequests, RoomAssignments
 from billing.models import Invoice, InvoiceItems, InvoiceStatus
@@ -10,6 +15,9 @@ from account.models import User, Student
 from support.models import Complaints, ComplaintsResponse
 from surveys.models import Survey, SurveyResponse, SurveyQuestion
 from notifications.models import Notification
+from billing.forms import InvoiceInputForm
+from django.shortcuts import redirect
+from django.contrib import messages
 
 
 class MyAdminSite(admin.AdminSite):
@@ -20,9 +28,103 @@ class MyAdminSite(admin.AdminSite):
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
-            path('revenue-stats/', self.stats_view, name='revenue-stats')
+            path('add-invoice/', self.add_invoice_view, name='add-invoice'),
+            path('revenue-stats/', self.stats_view, name='revenue-stats'),
         ]
         return custom_urls + urls
+
+    def add_invoice_view(self, request):
+        InvoiceFormSet = formset_factory(InvoiceInputForm, extra=0)
+
+        if request.method == 'POST':
+            month_str = request.POST.get('month')
+        else:
+            month_str = request.GET.get('month')
+
+        try:
+            month_date = datetime.strptime(month_str, '%Y-%m') if month_str else datetime.now()
+        except ValueError:
+            month_date = datetime.now()
+
+        if request.method == 'POST':
+            formset = InvoiceFormSet(request.POST)
+            if formset.is_valid():
+                created_count = 0
+                skipped_rooms = 0
+
+                for form in formset:
+                    room_id = form.cleaned_data.get('room_id')
+                    electricity_fee = form.cleaned_data.get('electricity_fee')
+                    water_fee = form.cleaned_data.get('water_fee')
+                    other_services_fee = form.cleaned_data.get('other_services_fee') or 0
+
+                    try:
+                        room = Room.objects.get(id=room_id)
+                    except Room.DoesNotExist:
+                        continue
+
+                    if Invoice.objects.filter(room=room, invoice_month__year=month_date.year,
+                                              invoice_month__month=month_date.month).exists():
+                        skipped_rooms += 1
+                        continue
+
+                    room_fee = room.monthly_fee
+                    total_amount = room_fee + electricity_fee + water_fee + other_services_fee
+                    description = f"Hóa đơn {month_date.strftime('%m/%Y')} - Phòng {room.room_number}"
+
+                    invoice = Invoice.objects.create(
+                        description=description,
+                        room=room,
+                        total_amount=total_amount,
+                        status=InvoiceStatus.UNPAID,
+                        active=False,
+                        invoice_month=month_date.date()
+                    )
+
+                    items = [
+                        InvoiceItems(invoice=invoice, description="Tiền nhà", amount=room_fee),
+                        InvoiceItems(invoice=invoice, description="Tiền điện", amount=electricity_fee),
+                        InvoiceItems(invoice=invoice, description="Tiền nước", amount=water_fee),
+                    ]
+                    if other_services_fee > 0:
+                        items.append(
+                            InvoiceItems(invoice=invoice, description="Dịch vụ khác", amount=other_services_fee))
+
+                    InvoiceItems.objects.bulk_create(items)
+                    created_count += 1
+
+                if created_count > 0:
+                    messages.success(request, f"Đã tạo {created_count} hóa đơn mới.")
+                if skipped_rooms > 0:
+                    messages.warning(request, f"Bỏ qua {skipped_rooms} phòng vì đã có hóa đơn trong tháng.")
+
+                return redirect(f"{request.path}?month={month_date.strftime('%Y-%m')}")
+            else:
+                print("Formset errors:", formset.errors)
+                print("Non-form errors:", formset.non_form_errors())
+
+        else:
+            rooms = Room.objects.filter(available_beds__lt=models.F('total_beds')).order_by(
+                'building__building_name', 'floor', 'room_number'
+            )
+            initial_data = [{
+                'room_id': room.id,
+                'room_name': f"{room.building.building_name} - Tầng {room.floor} - {room.room_number}",
+                'monthly_fee': room.monthly_fee,
+                'electricity_fee': 0,
+                'water_fee': 0,
+                'other_services_fee': 0,
+            } for room in rooms]
+
+            formset = InvoiceFormSet(initial=initial_data)
+
+        context = dict(
+            self.each_context(request),
+            title="Nhập hóa đơn",
+            formset=formset,
+            month=month_date.strftime('%Y-%m')
+        )
+        return TemplateResponse(request, "admin/add-invoice.html", context)
 
     def stats_view(self, request):
         revenue_stats = []
@@ -131,7 +233,7 @@ class InvoiceItemInline(admin.StackedInline):
 
 
 class MyInvoiceAdmin(admin.ModelAdmin):
-    list_display = ("id", "room", "total_amount", "status")
+    list_display = ("id", "room", "total_amount", "status", "invoice_month", "active")
     list_filter = ("room_id", "status")
     search_fields = ("room__room_number", "total_amount")
     inlines = [InvoiceItemInline]

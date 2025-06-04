@@ -40,6 +40,13 @@ class RoomChangeRequestSerializer(serializers.ModelSerializer):
     student = UserSerializer(read_only=True)
     current_room = serializers.PrimaryKeyRelatedField(read_only=True)
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+
+        data['current_room'] = RoomSerializer(instance.current_room).data
+        data['requested_room'] = RoomSerializer(instance.requested_room).data
+        return data
+
     class Meta:
         model = RoomChangeRequests
         fields = ['id', 'reason', 'status', 'student', 'current_room', 'requested_room']

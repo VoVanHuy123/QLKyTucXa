@@ -8,9 +8,3 @@ class BaseModel(models.Model):
     class Meta:
         abstract = True
         ordering = ['-id']
-
-
-# class Chat(BaseModel):
-#     student = models.ForeignKey('Student', on_delete=models.CASCADE, related_name='student_messages')
-#     admin = models.ForeignKey('User', on_delete=models.CASCADE, related_name='admin_messages')
-#     message = models.TextField()

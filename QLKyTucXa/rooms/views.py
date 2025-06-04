@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from rest_framework.exceptions import ValidationError
 
 from rooms import perms, serializers, paginators
@@ -8,7 +7,6 @@ from rest_framework import viewsets, status, permissions, generics
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from billing.serializers import InvoiceSerializer
-from rest_framework import filters
 from KyTucXa import perms
 from django_filters.rest_framework import DjangoFilterBackend
 from .filter import RoomFilter, RoomChangeRequestFilter
@@ -164,7 +162,7 @@ class RoomChangeRequestViewSet(viewsets.ViewSet, generics.CreateAPIView, generic
     filterset_class = RoomChangeRequestFilter
 
     def get_permissions(self):
-        if self.action in ['create']:
+        if self.action in ['create', 'room_change_request']:
             return [perms.IsStudentUser()]
         elif self.action in ['list', 'update', 'partial_update', 'destroy']:
             return [perms.IsAdminUser()]
@@ -181,6 +179,22 @@ class RoomChangeRequestViewSet(viewsets.ViewSet, generics.CreateAPIView, generic
             raise ValidationError({"error": "Sinh viên chưa có phòng."})
 
         serializer.save(student=user.student, current_room=assignment.room)
+
+    @action(methods=['get'], detail=False, url_path='my-room-change-requests')
+    def room_change_request(self, request):
+        user = request.user
+
+        change_requests = self.queryset.filter(student=user.student).order_by('-id')
+
+        paginator = self.pagination_class()
+        page = paginator.paginate_queryset(change_requests, request)
+
+        if page is not None:
+            serializer = self.serializer_class(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
+
+        serializer = self.serializer_class(change_requests, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class RoomAssignmentsViewSet(viewsets.ViewSet, generics.RetrieveAPIView):

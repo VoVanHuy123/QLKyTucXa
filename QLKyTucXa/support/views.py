@@ -90,30 +90,9 @@ class ComplaintsViewSet(viewsets.ViewSet):
 
         complaints = self.get_queryset().filter(room=assignment.room)
 
-        paginator = self.pagination_class()
-        page = paginator.paginate_queryset(complaints, request)
-
-        if page is not None:
-            serializer = self.serializer_class(page, many=True)
-            return paginator.get_paginated_response(serializer.data)
-
-        serializer = self.serializer_class(complaints, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    @action(detail=False, methods=['get'], url_path='my-complaints')
-    def my_complaints(self, request):
-        user = request.user
-
-        if not hasattr(user, 'student') or request.user.student is None:
-            return Response({"error": "Tài khoản không liên kết với sinh viên."},
-                            status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            assignment = RoomAssignments.objects.get(student=user.student, active=True)
-        except RoomAssignments.DoesNotExist:
-            return Response({"error": "Sinh viên chưa có phòng."}, status=status.HTTP_400_BAD_REQUEST)
-
-        complaints = self.get_queryset().filter(room=assignment.room, student=user.student).order_by('-id')
+        student_id = request.query_params.get('student')
+        if student_id:
+            complaints = complaints.filter(student_id=student_id)
 
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(complaints, request)

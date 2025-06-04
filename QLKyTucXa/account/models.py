@@ -19,9 +19,9 @@ class User(AbstractUser):
 
 
 class Student(User):
-    phone_number = models.CharField(max_length=20,null=True)
-    student_code = models.CharField(max_length=20, null=True)
-    university = models.CharField(max_length=50, null=True)
+    phone_number = models.CharField(max_length=20)
+    student_code = models.CharField(max_length=20)
+    university = models.CharField(max_length=50)
 
     class Meta:
         db_table = 'student'

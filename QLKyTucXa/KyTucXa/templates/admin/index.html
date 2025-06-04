@@ -1,10 +1,15 @@
 {% extends "admin/index.html" %}
 
 {% block content %}
-    <div style="margin-bottom: 20px">
-        <a href="{% url 'admin:revenue-stats' %}" class="button" style="padding: 10px; text-decoration: none">
-            📊 Xem thống kê doanh thu
-        </a>
-    </div>
-  {{ block.super }}
+<div style="margin-bottom: 20px">
+    <a href="{% url 'admin:revenue-stats' %}" class="button" style="padding: 10px; text-decoration: none;
+     margin-right: 10px">
+        📊 Xem thống kê doanh thu
+    </a>
+
+    <a href="{% url 'admin:add-invoice' %}" class="button" style="padding: 10px; text-decoration: none">
+        Nhập hóa đơn hàng loạt
+    </a>
+</div>
+{{ block.super }}
 {% endblock %}

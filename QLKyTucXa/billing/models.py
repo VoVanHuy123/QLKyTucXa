@@ -11,7 +11,7 @@ class InvoiceStatus(models.TextChoices):
 class Invoice(BaseModel):
     description = models.CharField(max_length=100, null=True)
     room = models.ForeignKey(Room, on_delete=models.CASCADE)
-    # amount = models.DecimalField(max_digits=10, decimal_places=2)
+    invoice_month = models.DateField()
     total_amount = models.FloatField()
     status = EnumField(choices=InvoiceStatus.choices, default=InvoiceStatus.UNPAID)
 
