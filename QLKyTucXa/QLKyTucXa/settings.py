@@ -46,7 +46,8 @@ INSTALLED_APPS = [
     'support',
     'surveys',
     'account',
-    'corsheaders'
+    'corsheaders',
+    'django.contrib.humanize'
 ]
 
 MIDDLEWARE = [
