@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from rest_framework import viewsets, generics, status, parsers, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from django_filters.rest_framework import DjangoFilterBackend
 from django.contrib.auth import authenticate
 from oauth2_provider.models import AccessToken, RefreshToken, Application
 from oauthlib.common import generate_token
@@ -9,10 +10,11 @@ from django.utils.timezone import now
 import datetime
 from account.models import User, Student
 from rooms.models import Room, RoomChangeRequests, RoomAssignments
-from account import serializers, paginators, perms
+from account import serializers, paginators, perms,filters
 from rooms.serializers import RoomChangeRequestSerializer
 from account.serializers import UserSerializer
 from KyTucXa import perms
+
 import dotenv
 import os
 
@@ -25,11 +27,15 @@ dotenv.load_dotenv()
 # Create your views here.
 
 
-class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.RetrieveAPIView):
+class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.RetrieveAPIView,generics.ListAPIView):
     queryset = Student.objects.filter(is_active=True)
     serializer_class = serializers.UserSerializer
     parser_classes = [parsers.JSONParser, parsers.MultiPartParser]
     permission_classes = [perms.IsAdminUser]
+    pagination_class = paginators.StudentPaginater
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = filters.StudentFillters
+
 
     def str_to_bool(self, val):
         if isinstance(val, bool):
@@ -71,14 +77,24 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.RetrieveAPI
         else:
             return Response(serializers.UserSerializer(request.user).data)
 
+    # /user/{id}/deactivateactivate-user/
+    @action(methods=['patch'], detail=True, permission_classes=[permissions.IsAdminUser])
+    def deactivate_student(self, request, pk):
+        student = get_object_or_404(Student, pk=pk)
+        if student.is_superuser:
+            return Response({"error": "Không thể vô hiệu hóa tài khoản admin"}, status=status.HTTP_403_FORBIDDEN)
+        
+        student.is_active = False
+        student.save()
+        return Response({"message": "Đã vô hiệu hóa người dùng thành công!"}, status=status.HTTP_200_OK)
     # /user/{id}/delete-user/
-    @action(methods=['delete'], detail=True, permission_classes=[permissions.IsAdminUser])
-    def delete_user(self, request, pk):
-        user = get_object_or_404(User, pk=pk)
-        if user.is_superuser:
-            return Response({"error": "Không thể xóa tài khoản admin"}, status=status.HTTP_403_FORBIDDEN)
-        user.delete()
-        return Response({"message": "Xóa người dùng thành công!"}, status=status.HTTP_204_NO_CONTENT)
+    # @action(methods=['delete'], detail=True, permission_classes=[permissions.IsAdminUser])
+    # def delete_user(self, request, pk):
+    #     user = get_object_or_404(User, pk=pk)
+    #     if user.is_superuser:
+    #         return Response({"error": "Không thể xóa tài khoản admin"}, status=status.HTTP_403_FORBIDDEN)
+    #     user.delete()
+    #     return Response({"message": "Xóa người dùng thành công!"}, status=status.HTTP_204_NO_CONTENT)
 
     # /user/{id}/requests/
     @action(methods=['get'], detail=True, url_path="requests")

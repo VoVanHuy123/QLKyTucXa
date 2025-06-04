@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from billing.models import Invoice, InvoiceItems
 from rooms.serializers import RoomSerializer
+from rooms.models import Room
 
 
 class InvoiceItemSerializer(serializers.ModelSerializer):
@@ -12,7 +13,8 @@ class InvoiceItemSerializer(serializers.ModelSerializer):
 
 
 class InvoiceSerializer(serializers.ModelSerializer):
-    room = RoomSerializer()
+    # room = RoomSerializer()
+    room = serializers.PrimaryKeyRelatedField(queryset=Room.objects.all())
     items = InvoiceItemSerializer(many=True)
 
     class Meta:
