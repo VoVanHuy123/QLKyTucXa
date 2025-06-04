@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from billing.serializers import InvoiceSerializer
 from KyTucXa import perms
 from django_filters.rest_framework import DjangoFilterBackend
-from .filter import RoomFilter, RoomChangeRequestFilter
+from .filter import RoomFilter, RoomChangeRequestFilter, RoomAssignmentFilter
 from billing.paginators import InvoicePaginater
 from account.models import Student
 
@@ -197,7 +197,9 @@ class RoomChangeRequestViewSet(viewsets.ViewSet, generics.CreateAPIView, generic
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class RoomAssignmentsViewSet(viewsets.ViewSet, generics.RetrieveAPIView):
+class RoomAssignmentsViewSet(viewsets.ViewSet, generics.RetrieveAPIView,generics.ListAPIView):
     queryset = RoomAssignments.objects.filter(active=True)
     serializer_class = serializers.RoomAssignmentsSerializer
     permission_classes = [permissions.IsAdminUser]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = RoomAssignmentFilter
