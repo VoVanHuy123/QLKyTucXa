@@ -7,8 +7,8 @@ from django.db.models.functions import Coalesce
 from django.forms import formset_factory
 from django.template.response import TemplateResponse
 from django.urls import path
-from django.utils.timezone import make_aware
 
+from config.PushNoti import send_push_notification
 from rooms.models import Room, Building, RoomChangeRequests, RoomAssignments
 from billing.models import Invoice, InvoiceItems, InvoiceStatus
 from account.models import User, Student
@@ -24,6 +24,9 @@ class MyAdminSite(admin.AdminSite):
     site_header = "Quản lý ký túc xá"
     site_title = "Quản lý ký túc xá"
     index_title = "Chào mừng đến với trang quản trị"
+
+    def has_permission(self, request):
+        return request.user.is_active and request.user.is_superuser
 
     def get_urls(self):
         urls = super().get_urls()
@@ -219,9 +222,9 @@ class StudentRoomInline(admin.TabularInline):
 
 
 class MyStudentAdmin(admin.ModelAdmin):
-    list_display = ("student_code", "phone_number", "university")
+    list_display = ("student_code", "university", "first_name", "last_name")
     list_filter = ("university",)
-    search_fields = ("university", "phone_number")
+    search_fields = ("university", "first_name", "last_name")
     ordering = ("-id",)
     inlines = [StudentRoomInline]
 
@@ -318,6 +321,33 @@ class MySurveyResponseAdmin(admin.ModelAdmin):
     ordering = ("-created_date",)
 
 
+###
+class MyNotificationAdmin(admin.ModelAdmin):
+    list_display = ("id", "title", "content", "announcement_type", "is_urgent")
+    list_filter = ("announcement_type",)
+    search_fields = ("title", "content")
+    ordering = ("-created_date",)
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+
+        if obj.is_urgent:
+            users = User.objects.exclude(expo_token=None).exclude(expo_token="")
+            for user in users:
+                send_push_notification(user.expo_token, obj.title, obj.content)
+
+
+###
+class MyRoomAssignmentAdmin(admin.ModelAdmin):
+    list_display = ("id", "room", "student_name", "bed_number")
+    list_filter = ("room",)
+    search_fields = ("student__first_name", "student__last_name")
+    ordering = ("room", "student")
+
+    def student_name(self, obj):
+        return obj.student.first_name + ' ' + obj.student.last_name
+
+
 admin_site = MyAdminSite(name='myadmin')
 admin_site.register(User, MyUserAdmin)
 admin_site.register(Student, MyStudentAdmin)
@@ -329,5 +359,5 @@ admin_site.register(Complaints, MyComplaintAdmin)
 admin_site.register(Survey, MySurveyAdmin)
 admin_site.register(SurveyQuestion, MySurveyQuestionAdmin)
 admin_site.register(SurveyResponse, MySurveyResponseAdmin)
-admin_site.register(RoomAssignments)
-admin_site.register(Notification)
+admin_site.register(RoomAssignments, MyRoomAssignmentAdmin)
+admin_site.register(Notification, MyNotificationAdmin)

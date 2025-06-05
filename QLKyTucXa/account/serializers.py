@@ -5,7 +5,6 @@ from .models import User, Student
 class UserSerializer(serializers.ModelSerializer):
     student_code = serializers.CharField(write_only=True)
     university = serializers.CharField(write_only=True)
-    phone_number = serializers.CharField(write_only=True)
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -14,13 +13,11 @@ class UserSerializer(serializers.ModelSerializer):
 
         if hasattr(instance, 'student'):
             student = instance.student
-            data['phone_number'] = student.phone_number
             data['student_code'] = student.student_code
             data['university'] = student.university
 
         return data
 
-    # tạo user mới
     def create(self, validated_data):
         data = validated_data.copy()
         u = Student(**data)

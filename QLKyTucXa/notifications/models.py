@@ -8,7 +8,7 @@ class Notification(BaseModel):
     content = models.TextField()
     announcement_type = models.CharField(max_length=50, null=True)
     is_urgent = models.BooleanField(default=False, null=True)
-    room = models.ForeignKey(Room, on_delete=models.CASCADE, null=True)
+    room = models.ForeignKey(Room, on_delete=models.CASCADE, null=True, blank=True)
 
     class Meta:
         ordering = ['-created_date']
