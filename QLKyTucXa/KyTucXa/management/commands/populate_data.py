@@ -9,6 +9,7 @@ from billing.models import Invoice, InvoiceItems
 from support.models import Complaints, ComplaintsResponse
 from surveys.models import Survey, SurveyQuestion, SurveyResponse
 
+
 class Command(BaseCommand):
     help = 'Populate the database with sample data for all models'
 
