@@ -10,7 +10,7 @@ from django.utils.timezone import now
 import datetime
 from account.models import User, Student
 from rooms.models import Room, RoomChangeRequests, RoomAssignments
-from account import serializers, paginators, perms,filters
+from account import serializers, paginators, perms, filters
 from rooms.serializers import RoomChangeRequestSerializer
 from account.serializers import UserSerializer
 from KyTucXa import perms
@@ -27,7 +27,7 @@ dotenv.load_dotenv()
 # Create your views here.
 
 
-class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.RetrieveAPIView,generics.ListAPIView):
+class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.RetrieveAPIView, generics.ListAPIView):
     queryset = Student.objects.filter(is_active=True)
     serializer_class = serializers.UserSerializer
     parser_classes = [parsers.JSONParser, parsers.MultiPartParser]
@@ -36,7 +36,6 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.RetrieveAPI
     filter_backends = [DjangoFilterBackend]
     filterset_class = filters.StudentFillters
 
-
     def str_to_bool(self, val):
         if isinstance(val, bool):
             return val
@@ -44,36 +43,33 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.RetrieveAPI
             return val.lower() in ['true', '1']
         return False
 
-    # /user/current-user/
     @action(methods=['get', 'patch'], url_path="current-user", detail=False,
             permission_classes=[permissions.IsAuthenticated])
     def current_user(self, request):
 
         if request.method.__eq__("PATCH"):
-            u = request.user
+            u = request.user.student
+            data = request.data.copy()
+            data.pop("student_code", None)
+            data.pop("university", None)
+            data.pop("role", None)
 
-            student = None
-            if hasattr(u, 'student'):
-                student = u.student
-
-            for key in request.data:
-                if key in ['first_name', 'last_name', 'username', 'role', 'email']:
-                    setattr(u, key, request.data[key])
-                elif key == 'is_first_access':
-                    setattr(u, key, self.str_to_bool(request.data[key]))
-                elif key == 'password':
-                    u.set_password(request.data[key])
-                elif student and key in ['phone_number']:
-                    setattr(student, key, request.data[key])
+            if 'password' in data:
+                u.set_password(data.pop('password'))
+            if 'is_first_access' in data:
+                data['is_first_access'] = self.str_to_bool(data['is_first_access'])
 
             avatar = request.FILES.get('avatar')
             if avatar:
                 u.avatar = avatar
 
-            if student:
-                student.save()
-            u.save()
-            return Response(serializers.UserSerializer(u).data)
+            serializer = self.serializer_class(u, data=data, partial=True)
+
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response(serializers.UserSerializer(request.user).data)
 
@@ -83,10 +79,11 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.RetrieveAPI
         student = get_object_or_404(Student, pk=pk)
         if student.is_superuser:
             return Response({"error": "Không thể vô hiệu hóa tài khoản admin"}, status=status.HTTP_403_FORBIDDEN)
-        
+
         student.is_active = False
         student.save()
         return Response({"message": "Đã vô hiệu hóa người dùng thành công!"}, status=status.HTTP_200_OK)
+
     # /user/{id}/delete-user/
     # @action(methods=['delete'], detail=True, permission_classes=[permissions.IsAdminUser])
     # def delete_user(self, request, pk):

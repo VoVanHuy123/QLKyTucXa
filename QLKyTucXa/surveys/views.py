@@ -1,10 +1,10 @@
-from django.db.models import Q,Count
+from django.db.models import Q, Count
 from rest_framework import viewsets, generics, status, permissions
 from rest_framework.decorators import action
 
 from .models import Survey, SurveyResponse, SurveyQuestion
 from account.models import Student
-from rooms.models import Room,Building
+from rooms.models import Room, Building
 from . import models, paginators, serializers
 from KyTucXa.perms import IsAdminUser, IsAuthenticatedUser, IsAdminOrReadOnly, IsObjectOwner, IsStudentOrAdmin
 from rest_framework.response import Response
@@ -152,7 +152,6 @@ class SurveyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.DestroyAPIV
 
             serializer = serializers.SurveyQuestionSerializer(questions, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
-    
 
 
 class SurveyQuestionViewSet(viewsets.ViewSet, generics.RetrieveAPIView):
@@ -162,7 +161,7 @@ class SurveyQuestionViewSet(viewsets.ViewSet, generics.RetrieveAPIView):
     permission_classes = [IsAuthenticatedUser]
 
 class StatisticsViewSet(viewsets.ViewSet):
-    @action(detail=False, methods=['get'], url_path='summary',permission_classes=[IsAdminUser])
+    @action(detail=False, methods=['get'], url_path='summary', permission_classes=[IsAdminUser])
     def summary(self, request):
         total_students = Student.objects.filter(is_active=True).distinct().count()
         total_rooms = Room.objects.count()
@@ -174,18 +173,16 @@ class StatisticsViewSet(viewsets.ViewSet):
             "total_buildings": total_buildings,
         }
         return Response(data)
+
     @action(detail=False, methods=['get'], url_path='detail', permission_classes=[IsAdminUser])
     def building_detail(self, request):
         building_detail = Building.objects.annotate(
             total_rooms=Count('rooms', distinct=True),
             total_students=Count('rooms__room_assignments', filter=Q(rooms__room_assignments__active=True)),
-            room_still_empty = Count('rooms',filter=Q(rooms__status = "Empty"),distinct=True)
-        ).values('id', 'building_name', 'total_rooms', 'total_students','room_still_empty')
+            room_still_empty=Count('rooms', filter=Q(rooms__status="Empty"), distinct=True)
+        ).values('id', 'building_name', 'total_rooms', 'total_students', 'room_still_empty')
 
         data = {
             "building_detail": building_detail
         }
         return Response(data)
-
-    
-

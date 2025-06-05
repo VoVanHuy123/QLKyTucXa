@@ -5,6 +5,7 @@ from datetime import date, timedelta
 from account.models import User
 from billing.models import Invoice
 from config.PushNoti import send_push_notification
+from notifications.models import Notification
 
 logging.basicConfig(
     filename='D:/dev/CCNLTHD/logs/invoice_log.txt',
@@ -49,14 +50,19 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS(msg))
             logging.info(msg)
 
+            title = "Thanh toán hóa đơn"
+            content = f"Hóa tháng {today.month}/{today.year}"
+
+            Notification.objects.create(
+                title=title,
+                content=content,
+                announcement_type="Billing"
+            )
+
             users = User.objects.exclude(expo_token=None).exclude(expo_token="")
 
             for user in users:
-                send_push_notification(
-                    user.expo_token,
-                    "Thanh toán hóa đơn",
-                    f"Hóa tháng {today.month}/{today.year}"
-                )
+                send_push_notification(user.expo_token, title, content)
         else:
             msg = 'Không có hóa đơn cần kích hoạt.'
             self.stdout.write(msg)
