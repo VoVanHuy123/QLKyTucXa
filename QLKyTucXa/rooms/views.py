@@ -14,7 +14,7 @@ from billing.paginators import InvoicePaginater
 from account.models import Student
 
 
-class RoomViewSet(viewsets.ModelViewSet):
+class RoomViewSet(viewsets.ViewSet,generics.ListAPIView,generics.CreateAPIView,generics.RetrieveAPIView,generics.UpdateAPIView):
     queryset = Room.objects.filter(active=True).order_by('room_number')
     serializer_class = serializers.RoomSerializer
     permission_classes = [perms.IsAdminOrReadOnly]
