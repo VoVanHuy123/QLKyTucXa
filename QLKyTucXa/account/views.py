@@ -21,11 +21,7 @@ import os
 dotenv.load_dotenv()
 
 
-# treen pythonanywhere bật cái này lên
 # dotenv.load_dotenv("/home/vovanhuy/QLKyTucXa/QLKyTucXa/.env")
-
-# Create your views here.
-
 
 class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.RetrieveAPIView, generics.ListAPIView):
     queryset = Student.objects.filter(is_active=True)
@@ -73,7 +69,6 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.RetrieveAPI
         else:
             return Response(serializers.UserSerializer(request.user).data)
 
-    # /user/{id}/deactivateactivate-user/
     @action(methods=['patch'], detail=True, permission_classes=[permissions.IsAdminUser])
     def deactivate_student(self, request, pk):
         student = get_object_or_404(Student, pk=pk)
@@ -84,7 +79,6 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.RetrieveAPI
         student.save()
         return Response({"message": "Đã vô hiệu hóa người dùng thành công!"}, status=status.HTTP_200_OK)
 
-    # /user/{id}/delete-user/
     # @action(methods=['delete'], detail=True, permission_classes=[permissions.IsAdminUser])
     # def delete_user(self, request, pk):
     #     user = get_object_or_404(User, pk=pk)
@@ -93,7 +87,6 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.RetrieveAPI
     #     user.delete()
     #     return Response({"message": "Xóa người dùng thành công!"}, status=status.HTTP_204_NO_CONTENT)
 
-    # /user/{id}/requests/
     @action(methods=['get'], detail=True, url_path="requests")
     def get_invoices(self, request, pk):
         roomRequests = RoomChangeRequests.objects.filter(user_id=pk)
@@ -117,11 +110,9 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.RetrieveAPI
         except Application.DoesNotExist:
             return Response({"error": "OAuth2 Application not found"}, status=500)
 
-        # Xóa token cũ (nếu có)
         AccessToken.objects.filter(user=user, application=application).delete()
         RefreshToken.objects.filter(user=user, application=application).delete()
 
-        # Tạo access token mới
         access_token = AccessToken.objects.create(
             user=user,
             application=application,
@@ -130,7 +121,6 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.RetrieveAPI
             scope="read write"
         )
 
-        # Tạo refresh token mới
         refresh_token = RefreshToken.objects.create(
             user=user,
             application=application,
@@ -151,10 +141,8 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.RetrieveAPI
     @action(methods=['get'], detail=False, url_path='available-students',
             permission_classes=[permissions.IsAuthenticated])
     def get_available_students(self, request):
-        # Lấy ID sinh viên đang có phòng (RoomAssignments còn active)
         assigned_student_ids = RoomAssignments.objects.filter(active=True).values_list('student_id', flat=True)
 
-        # Sinh viên đang hoạt động nhưng chưa có phòng hiện tại
         unassigned_students = Student.objects.filter(is_active=True).exclude(id__in=assigned_student_ids)
 
         return Response(serializers.UserSerializer(unassigned_students, many=True).data)

@@ -14,7 +14,7 @@ from billing.paginators import InvoicePaginater
 from account.models import Student
 
 
-class RoomViewSet(viewsets.ModelViewSet):
+class RoomViewSet(viewsets.ViewSet,generics.ListAPIView,generics.CreateAPIView,generics.RetrieveAPIView,generics.UpdateAPIView):
     queryset = Room.objects.filter(active=True).order_by('room_number')
     serializer_class = serializers.RoomSerializer
     permission_classes = [perms.IsAdminOrReadOnly]
@@ -106,11 +106,9 @@ class RoomViewSet(viewsets.ModelViewSet):
         except RoomAssignments.DoesNotExist:
             return Response({"error": "Sinh viên không ở phòng này hoặc đã bị xóa"}, status=status.HTTP_404_NOT_FOUND)
 
-        # Hủy kích hoạt phân công
         assignment.active = False
         assignment.save()
 
-        # Cập nhật lại số giường trống và trạng thái phòng
         room.available_beds += 1
         if room.status == 'Full':
             room.status = 'Empty'

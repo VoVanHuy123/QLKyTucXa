@@ -20,7 +20,7 @@ def send_push_notification(expo_token, title, message):
 
     try:
         response = requests.post("https://exp.host/--/api/v2/push/send", json=payload)
-        response.raise_for_status()  # Raise error nếu HTTP status code != 2xx
+        response.raise_for_status()
 
         result = response.json()
         print("Push notification response:", result)

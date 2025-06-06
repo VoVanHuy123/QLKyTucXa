@@ -51,7 +51,7 @@ class RoomAssignments(BaseModel):
         db_table = "room_assignments"
         constraints = [
             models.UniqueConstraint(
-                fields=['student', 'room', 'created_date'],
+                fields=['student', 'room', 'active'],
                 name='unique_student_room_date'
             )
         ]

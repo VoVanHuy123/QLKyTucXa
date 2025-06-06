@@ -9,7 +9,7 @@ class StudentFillters(django_filters.FilterSet):
 
     class Meta:
         model = Student
-        fields = ['name']  # Nếu có thêm field thì thêm vào list này
+        fields = ['name']
 
     def filter_full_name(self, queryset, name, value):
         return queryset.filter(
