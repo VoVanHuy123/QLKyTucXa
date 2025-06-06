@@ -11,8 +11,8 @@ class UserRole(models.TextChoices):
 
 
 class User(AbstractUser):
-    email = models.EmailField(unique=True, null=True)
-    phone_number = models.CharField(max_length=10, unique=True, null=True, validators=[
+    email = models.EmailField(unique=True)
+    phone_number = models.CharField(max_length=10, unique=True, validators=[
         RegexValidator(
             regex=r'^\d{10}$',
             message='Số điện thoại phải đúng 10 chữ số',
@@ -32,23 +32,19 @@ class Student(User):
     university = models.CharField(max_length=20)
 
     def save(self, *args, **kwargs):
-        # Kiểm tra nếu đang chuyển từ active -> inactive
         if self.pk:
             old = Student.objects.get(pk=self.pk)
             if old.is_active and not self.is_active:
 
-                # Tìm assignment mới nhất còn active
                 latest_active_assignment = self.room_assignments.filter(active=True).order_by('-created_date').first()
 
                 if latest_active_assignment:
                     room = latest_active_assignment.room
-                    # Cộng thêm available_beds
                     room.available_beds += 1
                     room.status = "Empty"
 
                     room.save()
 
-                    # Hủy kích hoạt assignment đó
                     latest_active_assignment.active = False
                     latest_active_assignment.save()
 
