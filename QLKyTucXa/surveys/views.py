@@ -152,7 +152,26 @@ class SurveyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.DestroyAPIV
 
             serializer = serializers.SurveyQuestionSerializer(questions, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
+    @action(detail=True, methods=['get'], url_path='survey-student-count', permission_classes=[permissions.IsAdminUser])
+    def get_surveys_student_count(self, request, pk=None):
+        try:
+            survey = self.get_object()
 
+            total_students = Student.objects.filter(is_active = True).distinct().count()
+            answered_students = SurveyResponse.objects.filter(survey=survey).values('student').distinct().count()
+
+            return Response({
+                'survey_id': survey.id,
+                'survey_title': survey.title,
+                'answered_students': answered_students,
+                'total_students': total_students,
+                'answered_percent': round((answered_students / total_students) * 100, 2) if total_students > 0 else 0
+            })
+
+        except Survey.DoesNotExist:
+            return Response({'error': 'Không tim thấy khảo sát'}, status=404)
+        except Exception as e:
+            return Response({'error': str(e)}, status=500)
 
 class SurveyQuestionViewSet(viewsets.ViewSet, generics.RetrieveAPIView):
     queryset = SurveyQuestion.objects.filter(active=True).order_by('-id')
