@@ -106,11 +106,9 @@ class RoomViewSet(viewsets.ViewSet,generics.ListAPIView,generics.CreateAPIView,g
         except RoomAssignments.DoesNotExist:
             return Response({"error": "Sinh viên không ở phòng này hoặc đã bị xóa"}, status=status.HTTP_404_NOT_FOUND)
 
-        # Hủy kích hoạt phân công
         assignment.active = False
         assignment.save()
 
-        # Cập nhật lại số giường trống và trạng thái phòng
         room.available_beds += 1
         if room.status == 'Full':
             room.status = 'Empty'

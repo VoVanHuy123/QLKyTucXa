@@ -37,6 +37,7 @@ class Command(BaseCommand):
         admin_user = User.objects.create(
             username="admin1",
             email="admin1@gmail.com",
+            phone_number="0987654321",
             role='Admin',
             is_staff=1
         )
@@ -51,6 +52,7 @@ class Command(BaseCommand):
             student = Student.objects.create(
                 username=f"sv{fake.unique.random_int(100, 999)}",
                 email=fake.unique.email(),
+                phone_number=fake.unique.random_int(min=1111111111, max=9999999999),
                 role='Student',
                 student_code=fake.unique.random_int(min=1000000000, max=9999999999),
                 university="Đại học Mở TP.HCM",

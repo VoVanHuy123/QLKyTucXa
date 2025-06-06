@@ -196,20 +196,22 @@ class MyAdminSite(admin.AdminSite):
 ###
 class StudentInline(admin.StackedInline):
     model = Student
-    extra = 1
+    extra = 0
+    fields = ("student_code", "university")
 
 
 class MyUserAdmin(admin.ModelAdmin):
     list_display = ("username", "email", "role", "is_staff", "is_active")
     list_filter = ("role", "is_staff", "is_active")
-    search_fields = ("username", "email")
+    search_fields = ("username", "email", "first_name", "last_name")
     ordering = ("-id",)
     inlines = [StudentInline]
 
     def save_form(self, request, form, change):
-        data = super().save_form(request, form, change)
-        data.set_password(data.password)
-        return data
+        user = super().save_form(request, form, change)
+        if user.password and (user.pk is None or user.password != form.initial.get('password')):
+            user.set_password(user.password)
+        return user
 
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
@@ -227,6 +229,15 @@ class MyStudentAdmin(admin.ModelAdmin):
     search_fields = ("university", "first_name", "last_name")
     ordering = ("-id",)
     inlines = [StudentRoomInline]
+
+    def save_form(self, request, form, change):
+        user = super().save_form(request, form, change)
+        if user.password and (user.pk is None or user.password != form.initial.get('password')):
+            user.set_password(user.password)
+        return user
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
 
 
 ###
@@ -299,12 +310,17 @@ class SurveyQuestionInline(admin.StackedInline):
     extra = 1
 
 
+class SurveyResponseInline(admin.TabularInline):
+    model = SurveyResponse
+    extra = 0
+
+
 class MySurveyAdmin(admin.ModelAdmin):
     list_display = ("id", "title", "description", "user", "created_date", "update_date", "active")
     list_filter = ("active",)
     search_fields = ("title", "description")
     ordering = ("-created_date",)
-    inlines = [SurveyQuestionInline]
+    inlines = [SurveyQuestionInline, SurveyResponseInline]
 
 
 class MySurveyQuestionAdmin(admin.ModelAdmin):
