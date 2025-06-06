@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.db import models
 from django_mysql.models import EnumField
 
@@ -22,7 +23,7 @@ class RoomStatus(models.TextChoices):
 
 
 class Room(BaseModel):
-    building = models.ForeignKey('Building', on_delete=models.CASCADE,related_name="rooms")
+    building = models.ForeignKey('Building', on_delete=models.CASCADE, related_name="rooms")
     room_number = models.CharField(max_length=10, unique=True)
     room_type = models.CharField(max_length=50, null=True)
     floor = models.IntegerField(null=True)
@@ -49,12 +50,18 @@ class RoomAssignments(BaseModel):
 
     class Meta:
         db_table = "room_assignments"
-        constraints = [
-            models.UniqueConstraint(
-                fields=['student', 'room', 'active'],
-                name='unique_student_room_date'
-            )
-        ]
+
+    def clean(self):
+        if self.active:
+            check = RoomAssignments.objects.filter(student=self.student, active=True)
+            if self.pk:
+                check = check.exclude(pk=self.pk)
+            if check.exists():
+                raise ValidationError("Sinh viên đã có phòng")
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
 
 
 class RoomChangeStatus(models.TextChoices):

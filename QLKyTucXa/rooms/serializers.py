@@ -42,5 +42,5 @@ class RoomChangeRequestSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RoomChangeRequests
-        fields = ['id', 'reason', 'status', 'student', 'current_room', 'requested_room']
+        fields = ['id', 'reason', 'status', 'student', 'current_room', 'requested_room', 'created_date']
         
