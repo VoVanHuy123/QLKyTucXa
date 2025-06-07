@@ -140,6 +140,8 @@ VNPAY_PAYMENT_URL = os.getenv('VNPAY_PAYMENT_URL')
 VNPAY_TMN_CODE = os.getenv('VNPAY_TMN_CODE')
 VNPAY_HASH_SECRET_KEY = os.getenv('VNPAY_HASH_SECRET_KEY')
 
+GOOGLE_MAPS_APIKEY = os.getenv("GOOGLE_MAPS_APIKEY")
+
 AUTH_USER_MODEL = 'account.User'
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators

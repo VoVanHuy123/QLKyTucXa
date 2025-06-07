@@ -3,7 +3,7 @@ from django.urls import path, include
 from . import views
 # from courses.admin import admin_site
 from rest_framework.routers import DefaultRouter
-from rooms.views import RoomViewSet, BuidingViewSet,RoomChangeRequestViewSet,RoomAssignmentsViewSet
+from rooms.views import RoomViewSet, BuidingViewSet, RoomChangeRequestViewSet, RoomAssignmentsViewSet, MapViewSet
 from account.views import UserViewSet
 from billing.views import InvoiceViewSet
 from support.views import ComplaintsViewSet, ComplaintsResponseViewSet
@@ -23,6 +23,7 @@ routers.register('surveys', SurveyViewSet, basename='surveys')
 routers.register('survey-questions', SurveyQuestionViewSet, basename='survey-questions')
 routers.register('notifications', NotiViewSet, basename='notifications')
 routers.register('statistics', StatisticsViewSet, basename='statistics')
+routers.register('map', MapViewSet, basename='map')
 
 
 urlpatterns = [

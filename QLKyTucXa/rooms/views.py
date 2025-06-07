@@ -1,5 +1,5 @@
+from django.conf import settings
 from rest_framework.exceptions import ValidationError
-
 from rooms import perms, serializers, paginators
 from rooms.models import Room, Building, RoomChangeRequests, RoomAssignments
 from billing.models import Invoice
@@ -12,9 +12,11 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .filter import RoomFilter, RoomChangeRequestFilter, RoomAssignmentFilter
 from billing.paginators import InvoicePaginater
 from account.models import Student
+import requests
 
 
-class RoomViewSet(viewsets.ViewSet,generics.ListAPIView,generics.CreateAPIView,generics.RetrieveAPIView,generics.UpdateAPIView):
+class RoomViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView, generics.RetrieveAPIView,
+                  generics.UpdateAPIView):
     queryset = Room.objects.filter(active=True).order_by('room_number')
     serializer_class = serializers.RoomSerializer
     permission_classes = [perms.IsAdminOrReadOnly]
@@ -195,9 +197,97 @@ class RoomChangeRequestViewSet(viewsets.ViewSet, generics.CreateAPIView, generic
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class RoomAssignmentsViewSet(viewsets.ViewSet, generics.RetrieveAPIView,generics.ListAPIView):
+class RoomAssignmentsViewSet(viewsets.ViewSet, generics.RetrieveAPIView, generics.ListAPIView):
     queryset = RoomAssignments.objects.filter(active=True)
     serializer_class = serializers.RoomAssignmentsSerializer
     permission_classes = [permissions.IsAdminUser]
     filter_backends = [DjangoFilterBackend]
     filterset_class = RoomAssignmentFilter
+
+
+class MapViewSet(viewsets.ViewSet):
+    permission_classes = [perms.IsAuthenticatedUser]
+
+    @staticmethod
+    def decode_polyline(polyline_str):
+        points = []
+        index = 0
+        length = len(polyline_str)
+        lat = 0
+        lng = 0
+
+        while index < length:
+            shift = 0
+            result = 0
+            while True:
+                byte = ord(polyline_str[index]) - 63
+                index += 1
+                result |= (byte & 0x1f) << shift
+                shift += 5
+                if byte < 0x20:
+                    break
+            delta_lat = ~(result >> 1) if result & 1 else result >> 1
+            lat += delta_lat
+
+            shift = 0
+            result = 0
+            while True:
+                byte = ord(polyline_str[index]) - 63
+                index += 1
+                result |= (byte & 0x1f) << shift
+                shift += 5
+                if byte < 0x20:
+                    break
+            delta_lng = ~(result >> 1) if result & 1 else result >> 1
+            lng += delta_lng
+
+            points.append({'latitude': lat / 1e5, 'longitude': lng / 1e5})
+
+        return points
+
+    @action(methods=['get'], detail=False, url_path='get-direction')
+    def map(self, request):
+        origin_lat = request.query_params.get('origin_lat')
+        origin_lng = request.query_params.get('origin_lng')
+        dest_lat = request.query_params.get('dest_lat')
+        dest_lng = request.query_params.get('dest_lng')
+
+        if not all([origin_lat, origin_lng, dest_lat, dest_lng]):
+            raise ValidationError(
+                {"error": "Missing parameters, please provide origin_lat, origin_lng, dest_lat, dest_lng"})
+
+        try:
+            origin_lat = float(origin_lat)
+            origin_lng = float(origin_lng)
+            dest_lat = float(dest_lat)
+            dest_lng = float(dest_lng)
+        except ValueError:
+            raise ValidationError({"error": "Invalid coordinates, please provide valid float values for lat/lng."})
+
+        google_maps_api_key = settings.GOOGLE_MAPS_APIKEY
+        url = f'https://maps.googleapis.com/maps/api/directions/json'
+        params = {
+            'origin': f'{origin_lat},{origin_lng}',
+            'destination': f'{dest_lat},{dest_lng}',
+            'key': google_maps_api_key,
+            'mode': 'driving'
+        }
+
+        try:
+            response = requests.get(url, params=params)
+            data = response.json()
+
+            if data['status'] == 'OK' and data['routes']:
+                polyline_str = data['routes'][0].get('overview_polyline', {}).get('points', '')
+                route_points = self.decode_polyline(polyline_str)
+
+                route_data = {
+                    'legs': data['routes'][0].get('legs', []),
+                    'overview_polyline': route_points
+                }
+                return Response(route_data)
+            else:
+                return Response({"error": "No route found or Google Maps API error."}, status=400)
+
+        except requests.exceptions.RequestException as e:
+            return Response({"error": "Error while fetching route from Google Maps API", "details": str(e)}, status=500)
