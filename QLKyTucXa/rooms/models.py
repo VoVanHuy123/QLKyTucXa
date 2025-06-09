@@ -59,9 +59,37 @@ class RoomAssignments(BaseModel):
             if check.exists():
                 raise ValidationError("Sinh viên đã có phòng")
 
+        if self._state.adding and self.room.available_beds <= 0:
+            raise ValidationError("Phòng đã full")
+
+        if RoomAssignments.objects.filter(room=self.room, bed_number=self.bed_number, active=True).exclude(
+                pk=self.pk).exists():
+            raise ValidationError(f"Giường {self.bed_number} đã có người.")
+
     def save(self, *args, **kwargs):
+        is_new = self._state.adding
+        old_active = None
+
+        if not is_new:
+            old = RoomAssignments.objects.get(pk=self.pk)
+            old_active = old.active
+
         self.full_clean()
         super().save(*args, **kwargs)
+
+        room = self.room
+
+        if is_new and self.active:
+            room.available_beds -= 1
+        elif old_active and not self.active:
+            room.available_beds += 1
+
+        if room.available_beds <= 0:
+            room.status = RoomStatus.FULL
+        else:
+            room.status = RoomStatus.EMPTY
+
+        room.save()
 
 
 class RoomChangeStatus(models.TextChoices):

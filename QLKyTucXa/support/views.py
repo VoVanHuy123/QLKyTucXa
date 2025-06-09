@@ -1,4 +1,4 @@
-from rest_framework import viewsets, generics, status, mixins, permissions, parsers
+from rest_framework import viewsets, status, parsers
 from rest_framework.decorators import action
 from . import models, paginators, serializers
 from .models import Complaints, ComplaintsStatus, ComplaintsResponse, ComplaintsStatus
@@ -6,7 +6,6 @@ from KyTucXa.perms import IsAuthenticatedUser, IsStudentUser, IsAdminOrUserRoomO
 from rest_framework.response import Response
 from rooms.models import RoomAssignments
 from django.db.models import Q
-from django_filters.rest_framework import DjangoFilterBackend
 
 
 class ComplaintsViewSet(viewsets.ViewSet):

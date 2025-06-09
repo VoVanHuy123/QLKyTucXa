@@ -29,20 +29,6 @@ class SurveyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.DestroyAPIV
 
         return queryset
 
-    # def partial_update(self, request, pk=None):
-    #     try:
-    #         survey = Survey.objects.get(pk=pk, active=True)
-    #     except Survey.DoesNotExist:
-    #         return Response({"error": "Không tìm thấy."}, status=status.HTTP_404_NOT_FOUND)
-    #     self.check_object_permissions(request, survey)
-
-    #     serializer = self.serializer_class(survey, data=request.data, partial=True,context={'request': request})
-    #     if serializer.is_valid():
-    #         serializer.save()
-    #         return Response(serializer.data, status=status.HTTP_200_OK)
-
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
     @action(detail=True, methods=['get', 'post'], url_path='survey-responses',
             serializer_class=serializers.SurveyResponseSerializer, permission_classes=[IsStudentOrAdmin])
     def create_responses(self, request, pk):
@@ -152,12 +138,13 @@ class SurveyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.DestroyAPIV
 
             serializer = serializers.SurveyQuestionSerializer(questions, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
+
     @action(detail=True, methods=['get'], url_path='survey-student-count', permission_classes=[permissions.IsAdminUser])
     def get_surveys_student_count(self, request, pk=None):
         try:
             survey = self.get_object()
 
-            total_students = Student.objects.filter(is_active = True).distinct().count()
+            total_students = Student.objects.filter(is_active=True).distinct().count()
             answered_students = SurveyResponse.objects.filter(survey=survey).values('student').distinct().count()
 
             return Response({
@@ -173,11 +160,13 @@ class SurveyViewSet(viewsets.ViewSet, generics.ListAPIView, generics.DestroyAPIV
         except Exception as e:
             return Response({'error': str(e)}, status=500)
 
+
 class SurveyQuestionViewSet(viewsets.ViewSet, generics.RetrieveAPIView):
     queryset = SurveyQuestion.objects.filter(active=True).order_by('-id')
     pagination_class = paginators.SurveyPaginator
     serializer_class = serializers.SurveyQuestionSerializer
     permission_classes = [IsAuthenticatedUser]
+
 
 class StatisticsViewSet(viewsets.ViewSet):
     @action(detail=False, methods=['get'], url_path='summary', permission_classes=[IsAdminUser])

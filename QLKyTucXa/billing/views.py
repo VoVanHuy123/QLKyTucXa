@@ -8,7 +8,6 @@ from billing.serializers import InvoiceSerializer
 from django_filters.rest_framework import DjangoFilterBackend
 from .filter import InvoicesFilter
 from .paginators import InvoicePaginater
-from .perms import IsAdminOrUserInvoices
 from KyTucXa.perms import IsAdminOrUserRoomOwnerReadOnly, IsAdminOrUserRoomOwner
 from rooms.models import RoomAssignments
 from django.conf import settings
