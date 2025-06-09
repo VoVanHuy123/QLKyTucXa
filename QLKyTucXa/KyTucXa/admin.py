@@ -267,7 +267,7 @@ class RoomStudentInline(admin.TabularInline):
 
 
 class MyRoomAdmin(admin.ModelAdmin):
-    list_display = ("room_number", "room_type", "floor", "total_beds", "building", "active")
+    list_display = ("room_number", "room_type", "floor", "total_beds", "building", "available_beds", "active")
     list_filter = ("room_type", "floor", "building", "status")
     search_fields = ("room_number", "total_beds")
     inlines = [RoomStudentInline]
@@ -295,9 +295,9 @@ class ComplaintResponseInline(admin.StackedInline):
 
 
 class MyComplaintAdmin(admin.ModelAdmin):
-    list_display = ("id", "student_name", "room", "description", "status")
+    list_display = ("id", "student_name", "room", "title", "status")
     list_filter = ("room_id", "status")
-    search_fields = ("room__room_number", "description")
+    search_fields = ("room__room_number", "title", "description")
     inlines = [ComplaintResponseInline]
 
     def student_name(self, obj):

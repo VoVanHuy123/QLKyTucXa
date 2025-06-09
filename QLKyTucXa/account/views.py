@@ -69,7 +69,7 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.RetrieveAPI
         else:
             return Response(serializers.UserSerializer(request.user).data)
 
-    @action(methods=['patch'], detail=True, permission_classes=[permissions.IsAdminUser])
+    @action(methods=['patch'], detail=True)
     def deactivate_student(self, request, pk):
         student = get_object_or_404(Student, pk=pk)
         if student.is_superuser:
@@ -78,14 +78,6 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.RetrieveAPI
         student.is_active = False
         student.save()
         return Response({"message": "Đã vô hiệu hóa người dùng thành công!"}, status=status.HTTP_200_OK)
-
-    # @action(methods=['delete'], detail=True, permission_classes=[permissions.IsAdminUser])
-    # def delete_user(self, request, pk):
-    #     user = get_object_or_404(User, pk=pk)
-    #     if user.is_superuser:
-    #         return Response({"error": "Không thể xóa tài khoản admin"}, status=status.HTTP_403_FORBIDDEN)
-    #     user.delete()
-    #     return Response({"message": "Xóa người dùng thành công!"}, status=status.HTTP_204_NO_CONTENT)
 
     @action(methods=['get'], detail=True, url_path="requests")
     def get_invoices(self, request, pk):
@@ -138,21 +130,10 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.RetrieveAPI
             "user": UserSerializer(user).data
         })
 
-    @action(methods=['get'], detail=False, url_path='available-students',
-            permission_classes=[permissions.IsAuthenticated])
+    @action(methods=['get'], detail=False, url_path='available-students')
     def get_available_students(self, request):
         assigned_student_ids = RoomAssignments.objects.filter(active=True).values_list('student_id', flat=True)
 
         unassigned_students = Student.objects.filter(is_active=True).exclude(id__in=assigned_student_ids)
 
         return Response(serializers.UserSerializer(unassigned_students, many=True).data)
-
-    # @action(methods=['post'], detail=False, url_path='update-token',
-    #         permission_classes=[permissions.IsAuthenticated])
-    # def update_token(self, request):
-    #     token = request.data.get("expo_token")
-    #     if token:
-    #         request.user.expo_token = token
-    #         request.user.save()
-    #         return Response({"message": "Token saved successfully", "expo_token": request.user.expo_token})
-    #     return Response({"error": "No token provided"}, status=400)

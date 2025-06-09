@@ -3,7 +3,7 @@ from rest_framework.exceptions import ValidationError
 from rooms import perms, serializers, paginators
 from rooms.models import Room, Building, RoomChangeRequests, RoomAssignments
 from billing.models import Invoice
-from rest_framework import viewsets, status, permissions, generics
+from rest_framework import viewsets, status, generics
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from billing.serializers import InvoiceSerializer
@@ -24,13 +24,8 @@ class RoomViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView
     filter_backends = [DjangoFilterBackend]
     filterset_class = RoomFilter
 
-    @action(detail=False, methods=['get'], url_path='invoices', permission_classes=[perms.IsAdminUser])
-    def get_invoices(self, request):
-        invoices = Invoice.objects.all()
-        return Response(InvoiceSerializer(invoices, many=True).data)
-
     @action(methods=['get'], detail=True, url_path='invoices', serializer_class=InvoiceSerializer,
-            permission_classes=[permissions.IsAuthenticated])
+            permission_classes=[perms.IsAdminUser])
     def get_room_invoices(self, request, pk):
         invoice_id = request.query_params.get('invoice_id', None)
         if invoice_id:
@@ -49,7 +44,7 @@ class RoomViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView
 
             return Response(InvoiceSerializer(invoices, many=True).data, status=status.HTTP_200_OK)
 
-    @action(methods=['post'], detail=True, url_path='register-member', permission_classes=[permissions.IsAdminUser])
+    @action(methods=['post'], detail=True, url_path='register-member', permission_classes=[perms.IsAdminUser])
     def register_member(self, request, pk):
         try:
             room = Room.objects.get(pk=pk, active=True)
@@ -84,14 +79,9 @@ class RoomViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView
             active=True
         )
 
-        room.available_beds -= 1
-        if room.available_beds == 0:
-            room.status = 'Full'
-        room.save()
-
         return Response(serializers.RoomAssignmentsSerializer(assignment).data, status=status.HTTP_201_CREATED)
 
-    @action(methods=['patch'], detail=True, url_path='remove-member', permission_classes=[permissions.IsAdminUser])
+    @action(methods=['patch'], detail=True, url_path='remove-member', permission_classes=[perms.IsAdminUser])
     def remove_member(self, request, pk):
         try:
             room = Room.objects.get(pk=pk, active=True)
@@ -111,15 +101,10 @@ class RoomViewSet(viewsets.ViewSet, generics.ListAPIView, generics.CreateAPIView
         assignment.active = False
         assignment.save()
 
-        room.available_beds += 1
-        if room.status == 'Full':
-            room.status = 'Empty'
-        room.save()
-
         return Response({"message": "Xóa thành viên khỏi phòng thành công!"}, status=status.HTTP_200_OK)
 
     @action(methods=['get'], detail=True, url_path='room-assignments',
-            serializer_class=serializers.RoomAssignmentsSerializer, permission_classes=[permissions.IsAuthenticated])
+            serializer_class=serializers.RoomAssignmentsSerializer, permission_classes=[perms.IsAuthenticatedUser])
     def room_assignments(self, request, pk=None):
 
         try:
@@ -155,7 +140,7 @@ class RoomChangeRequestViewSet(viewsets.ViewSet, generics.CreateAPIView, generic
                                generics.UpdateAPIView):
     queryset = RoomChangeRequests.objects.filter(active=True)
     serializer_class = serializers.RoomChangeRequestSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [perms.IsAuthenticatedUser]
     pagination_class = paginators.RoomChangeRequestsPaginater
 
     filter_backends = [DjangoFilterBackend]
@@ -200,7 +185,7 @@ class RoomChangeRequestViewSet(viewsets.ViewSet, generics.CreateAPIView, generic
 class RoomAssignmentsViewSet(viewsets.ViewSet, generics.RetrieveAPIView, generics.ListAPIView):
     queryset = RoomAssignments.objects.filter(active=True)
     serializer_class = serializers.RoomAssignmentsSerializer
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [perms.IsAdminUser]
     filter_backends = [DjangoFilterBackend]
     filterset_class = RoomAssignmentFilter
 
@@ -253,7 +238,7 @@ class MapViewSet(viewsets.ViewSet):
         dest_lng = request.query_params.get('dest_lng')
 
         if not all([origin_lat, origin_lng, dest_lat, dest_lng]):
-            raise ValidationError(
+            return Response(
                 {"error": "Missing parameters, please provide origin_lat, origin_lng, dest_lat, dest_lng"})
 
         try:
@@ -262,7 +247,7 @@ class MapViewSet(viewsets.ViewSet):
             dest_lat = float(dest_lat)
             dest_lng = float(dest_lng)
         except ValueError:
-            raise ValidationError({"error": "Invalid coordinates, please provide valid float values for lat/lng."})
+            return Response({"error": "Invalid coordinates, please provide valid float values for lat/lng."})
 
         google_maps_api_key = settings.GOOGLE_MAPS_APIKEY
         url = f'https://maps.googleapis.com/maps/api/directions/json'
