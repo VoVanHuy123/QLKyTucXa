@@ -37,3 +37,4 @@ class UserSerializer(serializers.ModelSerializer):
                 'write_only': True
             },
         }
+        read_only_fields = ('is_staff', 'role')

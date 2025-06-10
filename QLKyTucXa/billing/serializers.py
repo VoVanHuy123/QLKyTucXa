@@ -13,7 +13,6 @@ class InvoiceItemSerializer(serializers.ModelSerializer):
 
 
 class InvoiceSerializer(serializers.ModelSerializer):
-    # room = RoomSerializer()
     room = serializers.PrimaryKeyRelatedField(queryset=Room.objects.all())
     items = InvoiceItemSerializer(many=True)
 
