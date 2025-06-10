@@ -15,7 +15,6 @@ class RoomAssignmentsSerializer(serializers.ModelSerializer):
                                                  write_only=True)
     student_detail = UserSerializer(source='student', read_only=True)
 
-    # student = UserSerializer
     class Meta:
         model = RoomAssignments
         fields = ['id', 'student', 'room', 'bed_number', 'student_detail', "active"]
@@ -23,6 +22,7 @@ class RoomAssignmentsSerializer(serializers.ModelSerializer):
 
 class RoomSerializer(serializers.ModelSerializer):
     building = BuildingSerializer()
+
     class Meta:
         model = Room
         fields = ['id', 'room_number', 'room_type', 'total_beds', 'available_beds', 'monthly_fee', 'status', 'building',
@@ -40,7 +40,13 @@ class RoomChangeRequestSerializer(serializers.ModelSerializer):
         data['requested_room'] = RoomSerializer(instance.requested_room).data
         return data
 
+    def create(self, validated_data):
+        request = self.context.get('request')
+        if request and not request.user.is_staff:
+            validated_data.pop('status', None)
+
+        return super().create(validated_data)
+
     class Meta:
         model = RoomChangeRequests
         fields = ['id', 'reason', 'status', 'student', 'current_room', 'requested_room', 'created_date']
-        

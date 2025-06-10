@@ -48,7 +48,6 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.RetrieveAPI
             data = request.data.copy()
             data.pop("student_code", None)
             data.pop("university", None)
-            data.pop("role", None)
 
             if 'password' in data:
                 u.set_password(data.pop('password'))

@@ -26,9 +26,9 @@ class ComplaintsSerializer(serializers.ModelSerializer):
         data['student'] = UserSerializer(instance.student).data
         data['room'] = RoomSerializer(instance.room).data
         data['image'] = instance.image.url if instance.image else ''
-        # data['responses'] = ComplaintsResponseSerializer(instance.responses, many=True).data
         return data
 
     class Meta:
         model = Complaints
-        fields = ["id","student",'room','image',"title","description","image","status","created_date"]
+        fields = ["id", "student", 'room', 'image', "title", "description", "image", "status", "created_date"]
+        read_only_fields = ('status',)
